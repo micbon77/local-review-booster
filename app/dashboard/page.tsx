@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { QRCodeCanvas } from "qrcode.react";
 import { useTranslation } from "@/lib/i18n";
 import jsPDF from "jspdf";
+import Analytics from "@/components/Analytics";
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -113,12 +114,12 @@ export default function DashboardPage() {
     if (loading) return <div className="p-4">{t.loading || "Caricamento..."}</div>;
 
     return (
-        <div className="max-w-2xl mx-auto p-4 space-y-6">
-            <h1 className="text-2xl font-bold text-center">{t.dashboardTitle}</h1>
+        <div className="max-w-4xl mx-auto p-4 space-y-8">
+            <h1 className="text-3xl font-bold text-center mb-8">{t.dashboardTitle}</h1>
 
             {/* Business setup */}
             {!business && (
-                <div className="space-y-4">
+                <div className="max-w-md mx-auto space-y-4">
                     <input
                         className="w-full p-2 border rounded"
                         placeholder={t.businessNamePlaceholder}
@@ -140,54 +141,77 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            {/* QR Code */}
             {business && (
-                <div className="text-center space-y-4">
-                    <h2 className="text-xl font-semibold">{t.qrTitle}</h2>
-                    <div id="qr-code-container">
-                        <QRCodeCanvas
-                            value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${business.id}`}
-                            size={200}
-                            level="H"
-                            includeMargin={true}
-                        />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column: QR Code & Actions */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-white p-6 rounded-lg shadow text-center border">
+                            <h2 className="text-xl font-semibold mb-4">{t.qrTitle}</h2>
+                            <div id="qr-code-container" className="flex justify-center mb-4">
+                                <QRCodeCanvas
+                                    value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${business.id}`}
+                                    size={200}
+                                    level="H"
+                                    includeMargin={true}
+                                />
+                            </div>
+                            <p className="text-sm text-gray-600 mb-4">{t.qrSubtitle}</p>
+                            <button
+                                onClick={downloadPDF}
+                                className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center justify-center gap-2"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                                Download PDF
+                            </button>
+                        </div>
                     </div>
-                    <p className="mt-2 text-sm text-gray-600">{t.qrSubtitle}</p>
-                    <button
-                        onClick={downloadPDF}
-                        className="mt-4 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 flex items-center gap-2 mx-auto"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                        Download PDF Poster
-                    </button>
-                </div>
-            )}
 
-            {/* Feedback negativi */}
-            {business && (
-                <div className="space-y-4">
-                    <h2 className="text-xl font-semibold">{t.feedbackTitle}</h2>
-                    {feedbacks.length === 0 ? (
-                        <p className="text-gray-500">{t.noFeedback}</p>
-                    ) : (
-                        <ul className="space-y-2">
-                            {feedbacks.map((fb) => (
-                                <li key={fb.id} className="p-3 border rounded bg-gray-50">
-                                    <p className="font-medium">⭐ {fb.rating}/5</p>
-                                    <p>{fb.comment}</p>
-                                    <p className="text-sm text-gray-600">Contatto: {fb.customer_contact}</p>
-                                    <button
-                                        className="mt-2 text-sm text-blue-600 hover:underline"
-                                        onClick={() => handleMarkRead(fb.id)}
-                                    >
-                                        {t.markAsRead || "Segna come letto"}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                    {/* Right Column: Analytics & Feedbacks */}
+                    <div className="lg:col-span-2 space-y-8">
+                        {/* Analytics Section */}
+                        <div className="bg-white p-6 rounded-lg shadow border">
+                            <Analytics businessId={business.id} />
+                        </div>
+
+                        {/* Negative Feedbacks Section */}
+                        <div className="bg-white p-6 rounded-lg shadow border">
+                            <h2 className="text-xl font-semibold mb-4">{t.feedbackTitle}</h2>
+                            {feedbacks.length === 0 ? (
+                                <p className="text-gray-500 text-center py-4">{t.noFeedback}</p>
+                            ) : (
+                                <ul className="space-y-3">
+                                    {feedbacks.map((fb) => (
+                                        <li key={fb.id} className="p-4 border rounded bg-gray-50 hover:bg-gray-100 transition">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-medium flex items-center gap-2">
+                                                        <span className="text-yellow-500">⭐</span> {fb.rating}/5
+                                                    </p>
+                                                    <p className="mt-1 text-gray-800">{fb.comment}</p>
+                                                    {fb.customer_contact && (
+                                                        <p className="text-sm text-gray-600 mt-2">
+                                                            📞 {fb.customer_contact}
+                                                        </p>
+                                                    )}
+                                                    <p className="text-xs text-gray-400 mt-2">
+                                                        {new Date(fb.created_at).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                                    onClick={() => handleMarkRead(fb.id)}
+                                                >
+                                                    {t.markAsRead || "Segna come letto"}
+                                                </button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
