@@ -12,6 +12,21 @@ import UpgradeBanner from "@/components/UpgradeBanner";
 import { Plus, ChevronDown, Building2, Lock, CheckCircle } from "lucide-react";
 
 export default function DashboardPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const { t } = useTranslation();
+    const [session, setSession] = useState<any>(null);
+
+    // Multi-business state
+    const [businesses, setBusinesses] = useState<any[]>([]);
+    const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+
+    const [name, setName] = useState("");
+    const [mapsLink, setMapsLink] = useState("");
+    const [feedbacks, setFeedbacks] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     // Mock Pro Status (replace with DB field later)
     const [isPro, setIsPro] = useState(false);
@@ -214,7 +229,7 @@ export default function DashboardPage() {
                                             }}
                                             className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-gray-50 flex items-center gap-2"
                                         >
-                                            <Plus className="w-4 h-4" /> Add New Business
+                                            <Plus className="w-4 h-4" /> {t.addNewBusiness || "Add New Business"}
                                         </button>
                                     </div>
                                 </>
@@ -230,7 +245,7 @@ export default function DashboardPage() {
                         onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
                         className="text-sm text-red-600 hover:text-red-700"
                     >
-                        Sign Out
+                        {t.signOut || "Sign Out"}
                     </button>
                 </div>
             </nav>
@@ -241,11 +256,11 @@ export default function DashboardPage() {
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                         <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
                             <h2 className="text-xl font-bold mb-4">
-                                {businesses.length === 0 ? "Welcome! Create your first business" : "Add New Business"}
+                                {businesses.length === 0 ? (t.welcomeCreate || "Welcome! Create your first business") : (t.addNewBusiness || "Add New Business")}
                             </h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.businessNameLabel || "Business Name"}</label>
                                     <input
                                         className="w-full p-2 border rounded-lg"
                                         placeholder="e.g. Mario's Pizza"
@@ -254,7 +269,7 @@ export default function DashboardPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Google Maps Link</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.mapsLinkLabel || "Google Maps Link"}</label>
                                     <input
                                         className="w-full p-2 border rounded-lg"
                                         placeholder="https://maps.google.com/..."
@@ -268,14 +283,14 @@ export default function DashboardPage() {
                                             onClick={() => setShowCreateForm(false)}
                                             className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
                                         >
-                                            Cancel
+                                            {t.cancelButton || "Cancel"}
                                         </button>
                                     )}
                                     <button
                                         className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
                                         onClick={handleCreate}
                                     >
-                                        Create Business
+                                        {t.createBusinessButton || "Create Business"}
                                     </button>
                                 </div>
                             </div>
@@ -307,10 +322,10 @@ export default function DashboardPage() {
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                             <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                                         </svg>
-                                        Download PDF Poster
+                                        {t.downloadPoster || "Download PDF Poster"}
                                     </button>
                                     <p className="mt-4 text-xs text-gray-500">
-                                        Print this poster and place it in your store to get more reviews.
+                                        {t.printPosterHint || "Print this poster and place it in your store to get more reviews."}
                                     </p>
                                 </div>
                             </div>
@@ -323,10 +338,10 @@ export default function DashboardPage() {
                                         <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
                                             <div className="text-center p-6">
                                                 <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                                <p className="font-semibold text-gray-800">Analytics Locked</p>
-                                                <p className="text-sm text-gray-500 mb-4">Upgrade to Pro to see detailed insights.</p>
+                                                <p className="font-semibold text-gray-800">{t.analyticsLockedTitle || "Analytics Locked"}</p>
+                                                <p className="text-sm text-gray-500 mb-4">{t.analyticsLockedMessage || "Upgrade to Pro to see detailed insights."}</p>
                                                 <button onClick={handleUpgrade} className="text-indigo-600 font-medium hover:underline">
-                                                    Unlock Analytics
+                                                    {t.unlockAnalyticsButton || "Unlock Analytics"}
                                                 </button>
                                             </div>
                                         </div>
@@ -393,7 +408,7 @@ export default function DashboardPage() {
                                                         onClick={handleUpgrade}
                                                         className="text-indigo-600 font-medium text-sm hover:underline"
                                                     >
-                                                        Upgrade to see all feedbacks
+                                                        {t.upgradeToSeeAll || "Upgrade to see all feedbacks"}
                                                     </button>
                                                 </div>
                                             )}
