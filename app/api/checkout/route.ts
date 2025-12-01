@@ -39,6 +39,11 @@ export async function POST(req: Request) {
             metadata: {
                 businessId: businessId,
             },
+            subscription_data: {
+                metadata: {
+                    businessId: businessId,
+                },
+            },
         });
 
         return NextResponse.json({ url: session.url });
