@@ -2,17 +2,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { QRCodeCanvas } from "qrcode.react";
 import { useTranslation } from "@/lib/i18n";
 import jsPDF from "jspdf";
 import Analytics from "@/components/Analytics";
 import UpgradeBanner from "@/components/UpgradeBanner";
-import { Plus, ChevronDown, Building2, Lock } from "lucide-react";
+import { Plus, ChevronDown, Building2, Lock, CheckCircle } from "lucide-react";
 
 export default function DashboardPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { t } = useTranslation();
     const [session, setSession] = useState<any>(null);
 
@@ -28,6 +29,7 @@ export default function DashboardPage() {
 
     // Mock Pro Status (replace with DB field later)
     const [isPro, setIsPro] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     // ---- Auth check -------------------------------------------------------
     useEffect(() => {
@@ -39,6 +41,16 @@ export default function DashboardPage() {
         }
         getSession();
     }, [router]);
+
+    // ---- Check for success param -----------------------------------------
+    useEffect(() => {
+        if (searchParams.get("success") === "true") {
+            setShowSuccess(true);
+            // In a real app, we would verify the session here
+            setIsPro(true);
+            setTimeout(() => setShowSuccess(false), 5000);
+        }
+    }, [searchParams]);
 
     // ---- Load all businesses ---------------------------------------------
     useEffect(() => {
@@ -60,7 +72,7 @@ export default function DashboardPage() {
             if (data.length > 0 && !selectedBusiness) {
                 setSelectedBusiness(data[0]);
                 // Check if business is pro (mock for now)
-                setIsPro(data[0].is_pro || false);
+                setIsPro(data[0].is_pro || searchParams.get("success") === "true" || false);
             }
         }
         setLoading(false);
@@ -70,7 +82,7 @@ export default function DashboardPage() {
     useEffect(() => {
         if (selectedBusiness) {
             loadFeedbacks(selectedBusiness.id);
-            setIsPro(selectedBusiness.is_pro || false);
+            setIsPro(selectedBusiness.is_pro || searchParams.get("success") === "true" || false);
         } else {
             setFeedbacks([]);
         }
@@ -135,9 +147,29 @@ export default function DashboardPage() {
     };
 
     // ---- Handle Upgrade --------------------------------------------------
-    const handleUpgrade = () => {
-        // Here we will integrate Stripe Checkout later
-        alert("Stripe Checkout will open here!");
+    const handleUpgrade = async () => {
+        if (!selectedBusiness || !session?.user?.email) return;
+
+        try {
+            const res = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    businessId: selectedBusiness.id,
+                    email: session.user.email,
+                }),
+            });
+
+            const data = await res.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert("Error creating checkout session");
+            }
+        } catch (error) {
+            console.error("Checkout error:", error);
+            alert("Failed to start checkout");
+        }
     };
 
     if (loading) return <div className="p-4">{t.loading || "Caricamento..."}</div>;
@@ -147,6 +179,14 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Success Toast */}
+            {showSuccess && (
+                <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-bounce">
+                    <CheckCircle className="w-5 h-5" />
+                    Upgrade Successful! Welcome to Pro.
+                </div>
+            )}
+
             {/* Header / Navigation */}
             <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center gap-4">
