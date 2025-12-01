@@ -8,12 +8,18 @@ import { QRCodeCanvas } from "qrcode.react";
 import { useTranslation } from "@/lib/i18n";
 import jsPDF from "jspdf";
 import Analytics from "@/components/Analytics";
+import { Plus, ChevronDown, Building2 } from "lucide-react";
 
 export default function DashboardPage() {
     const router = useRouter();
     const { t } = useTranslation();
     const [session, setSession] = useState<any>(null);
-    const [business, setBusiness] = useState<any>(null);
+
+    // Multi-business state
+    const [businesses, setBusinesses] = useState<any[]>([]);
+    const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
+    const [showCreateForm, setShowCreateForm] = useState(false);
+
     const [name, setName] = useState("");
     const [mapsLink, setMapsLink] = useState("");
     const [feedbacks, setFeedbacks] = useState<any[]>([]);
@@ -30,25 +36,38 @@ export default function DashboardPage() {
         getSession();
     }, [router]);
 
-    // ---- Load existing business (if any) ----------------------------------
+    // ---- Load all businesses ---------------------------------------------
     useEffect(() => {
         if (!session) return;
-        async function fetchBusiness() {
-            const { data, error } = await supabase
-                .from("businesses")
-                .select("*")
-                .eq("owner_id", session.user.id)
-                .single();
-            if (error && error.code !== "PGRST116") {
-                console.error(error);
-            } else if (data) {
-                setBusiness(data);
-                loadFeedbacks(data.id);
-            }
-            setLoading(false);
-        }
-        fetchBusiness();
+        loadBusinesses();
     }, [session]);
+
+    const loadBusinesses = async () => {
+        const { data, error } = await supabase
+            .from("businesses")
+            .select("*")
+            .eq("owner_id", session.user.id)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error(error);
+        } else if (data) {
+            setBusinesses(data);
+            if (data.length > 0 && !selectedBusiness) {
+                setSelectedBusiness(data[0]);
+            }
+        }
+        setLoading(false);
+    };
+
+    // ---- Load feedbacks when selected business changes --------------------
+    useEffect(() => {
+        if (selectedBusiness) {
+            loadFeedbacks(selectedBusiness.id);
+        } else {
+            setFeedbacks([]);
+        }
+    }, [selectedBusiness]);
 
     // ---- Create new business ---------------------------------------------
     const handleCreate = async () => {
@@ -63,8 +82,12 @@ export default function DashboardPage() {
             console.error(error);
             return alert(t.error || "Errore nella creazione");
         }
-        setBusiness(data[0]);
-        loadFeedbacks(data[0].id);
+
+        setBusinesses([data[0], ...businesses]);
+        setSelectedBusiness(data[0]);
+        setShowCreateForm(false);
+        setName("");
+        setMapsLink("");
     };
 
     // ---- Load negative feedbacks ------------------------------------------
@@ -73,19 +96,20 @@ export default function DashboardPage() {
             .from("feedbacks")
             .select("id, rating, comment, customer_contact, created_at")
             .eq("business_id", businessId)
-            .lte("rating", 3);
+            .lte("rating", 3)
+            .order("created_at", { ascending: false });
         if (error) console.error(error);
         else setFeedbacks(data || []);
     };
 
-    // ---- Mark feedback as read (simple delete for demo) -------------------
+    // ---- Mark feedback as read -------------------------------------------
     const handleMarkRead = async (id: string) => {
         const { error } = await supabase.from("feedbacks").delete().eq("id", id);
         if (error) console.error(error);
         else setFeedbacks((prev) => prev.filter((f) => f.id !== id));
     };
 
-    // ---- Download PDF with QR code ----------------------------------------
+    // ---- Download PDF ----------------------------------------------------
     const downloadPDF = () => {
         const canvas = document.querySelector("#qr-code-container canvas") as HTMLCanvasElement;
         if (!canvas) return alert("QR Code not found");
@@ -93,127 +117,206 @@ export default function DashboardPage() {
         const imgData = canvas.toDataURL("image/png");
         const pdf = new jsPDF();
 
-        // Add business name
         pdf.setFontSize(24);
-        pdf.text(business.business_name || "Review Us!", 105, 40, { align: "center" });
-
-        // Add CTA
+        pdf.text(selectedBusiness.business_name || "Review Us!", 105, 40, { align: "center" });
         pdf.setFontSize(16);
         pdf.text("Scan to leave a review", 105, 55, { align: "center" });
-
-        // Add QR Code
         pdf.addImage(imgData, "PNG", 55, 70, 100, 100);
-
-        // Add footer
         pdf.setFontSize(12);
         pdf.text("Thank you for your feedback!", 105, 190, { align: "center" });
-
-        pdf.save(`${business.business_name || "review"}-poster.pdf`);
+        pdf.save(`${selectedBusiness.business_name || "review"}-poster.pdf`);
     };
 
     if (loading) return <div className="p-4">{t.loading || "Caricamento..."}</div>;
 
     return (
-        <div className="max-w-4xl mx-auto p-4 space-y-8">
-            <h1 className="text-3xl font-bold text-center mb-8">{t.dashboardTitle}</h1>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header / Navigation */}
+            <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+                <div className="flex items-center gap-4">
+                    <h1 className="text-xl font-bold text-gray-800">Review Booster</h1>
 
-            {/* Business setup */}
-            {!business && (
-                <div className="max-w-md mx-auto space-y-4">
-                    <input
-                        className="w-full p-2 border rounded"
-                        placeholder={t.businessNamePlaceholder}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    <input
-                        className="w-full p-2 border rounded"
-                        placeholder={t.mapsLinkPlaceholder}
-                        value={mapsLink}
-                        onChange={(e) => setMapsLink(e.target.value)}
-                    />
+                    {/* Business Selector */}
+                    {businesses.length > 0 && (
+                        <div className="relative group">
+                            <button className="flex items-center gap-2 px-3 py-1.5 border rounded-lg hover:bg-gray-50 text-sm font-medium">
+                                <Building2 className="w-4 h-4 text-gray-500" />
+                                {selectedBusiness?.business_name}
+                                <ChevronDown className="w-4 h-4 text-gray-400" />
+                            </button>
+
+                            <div className="absolute top-full left-0 mt-1 w-56 bg-white border rounded-lg shadow-lg hidden group-hover:block py-1">
+                                {businesses.map(b => (
+                                    <button
+                                        key={b.id}
+                                        onClick={() => setSelectedBusiness(b)}
+                                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedBusiness?.id === b.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700'}`}
+                                    >
+                                        {b.business_name}
+                                    </button>
+                                ))}
+                                <div className="border-t my-1"></div>
+                                <button
+                                    onClick={() => setShowCreateForm(true)}
+                                    className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                    <Plus className="w-4 h-4" /> Add New Business
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-4">
+                    <span className="text-sm text-gray-500">{session?.user?.email}</span>
                     <button
-                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-                        onClick={handleCreate}
+                        onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
+                        className="text-sm text-red-600 hover:text-red-700"
                     >
-                        {t.saveBusinessButton}
+                        Sign Out
                     </button>
                 </div>
-            )}
+            </nav>
 
-            {business && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: QR Code & Actions */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white p-6 rounded-lg shadow text-center border">
-                            <h2 className="text-xl font-semibold mb-4">{t.qrTitle}</h2>
-                            <div id="qr-code-container" className="flex justify-center mb-4">
-                                <QRCodeCanvas
-                                    value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${business.id}`}
-                                    size={200}
-                                    level="H"
-                                    includeMargin={true}
-                                />
+            <main className="max-w-6xl mx-auto p-6">
+                {/* Create Business Modal/Form */}
+                {(showCreateForm || businesses.length === 0) && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+                            <h2 className="text-xl font-bold mb-4">
+                                {businesses.length === 0 ? "Welcome! Create your first business" : "Add New Business"}
+                            </h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                                    <input
+                                        className="w-full p-2 border rounded-lg"
+                                        placeholder="e.g. Mario's Pizza"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Google Maps Link</label>
+                                    <input
+                                        className="w-full p-2 border rounded-lg"
+                                        placeholder="https://maps.google.com/..."
+                                        value={mapsLink}
+                                        onChange={(e) => setMapsLink(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex gap-3 mt-6">
+                                    {businesses.length > 0 && (
+                                        <button
+                                            onClick={() => setShowCreateForm(false)}
+                                            className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                                        >
+                                            Cancel
+                                        </button>
+                                    )}
+                                    <button
+                                        className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                                        onClick={handleCreate}
+                                    >
+                                        Create Business
+                                    </button>
+                                </div>
                             </div>
-                            <p className="text-sm text-gray-600 mb-4">{t.qrSubtitle}</p>
-                            <button
-                                onClick={downloadPDF}
-                                className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center justify-center gap-2"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                                </svg>
-                                Download PDF
-                            </button>
                         </div>
                     </div>
+                )}
 
-                    {/* Right Column: Analytics & Feedbacks */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Analytics Section */}
-                        <div className="bg-white p-6 rounded-lg shadow border">
-                            <Analytics businessId={business.id} />
+                {selectedBusiness && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Left Column: QR Code & Actions */}
+                        <div className="lg:col-span-1 space-y-6">
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
+                                <h2 className="text-lg font-semibold mb-4 text-gray-800">{t.qrTitle}</h2>
+                                <div id="qr-code-container" className="flex justify-center mb-6 bg-white p-4 rounded-lg">
+                                    <QRCodeCanvas
+                                        value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${selectedBusiness.id}`}
+                                        size={200}
+                                        level="H"
+                                        includeMargin={true}
+                                    />
+                                </div>
+                                <button
+                                    onClick={downloadPDF}
+                                    className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 font-medium transition-colors"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                    Download PDF Poster
+                                </button>
+                                <p className="mt-4 text-xs text-gray-500">
+                                    Print this poster and place it in your store to get more reviews.
+                                </p>
+                            </div>
                         </div>
 
-                        {/* Negative Feedbacks Section */}
-                        <div className="bg-white p-6 rounded-lg shadow border">
-                            <h2 className="text-xl font-semibold mb-4">{t.feedbackTitle}</h2>
-                            {feedbacks.length === 0 ? (
-                                <p className="text-gray-500 text-center py-4">{t.noFeedback}</p>
-                            ) : (
-                                <ul className="space-y-3">
-                                    {feedbacks.map((fb) => (
-                                        <li key={fb.id} className="p-4 border rounded bg-gray-50 hover:bg-gray-100 transition">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <p className="font-medium flex items-center gap-2">
-                                                        <span className="text-yellow-500">⭐</span> {fb.rating}/5
-                                                    </p>
-                                                    <p className="mt-1 text-gray-800">{fb.comment}</p>
-                                                    {fb.customer_contact && (
-                                                        <p className="text-sm text-gray-600 mt-2">
-                                                            📞 {fb.customer_contact}
-                                                        </p>
-                                                    )}
-                                                    <p className="text-xs text-gray-400 mt-2">
-                                                        {new Date(fb.created_at).toLocaleDateString()}
-                                                    </p>
+                        {/* Right Column: Analytics & Feedbacks */}
+                        <div className="lg:col-span-2 space-y-8">
+                            {/* Analytics Section */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <Analytics businessId={selectedBusiness.id} />
+                            </div>
+
+                            {/* Negative Feedbacks Section */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-lg font-semibold text-gray-800">{t.feedbackTitle}</h2>
+                                    <span className="bg-red-100 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                        {feedbacks.length} New
+                                    </span>
+                                </div>
+
+                                {feedbacks.length === 0 ? (
+                                    <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
+                                        <p className="text-gray-500">{t.noFeedback}</p>
+                                        <p className="text-xs text-gray-400 mt-1">Great job! No negative feedback yet.</p>
+                                    </div>
+                                ) : (
+                                    <ul className="space-y-4">
+                                        {feedbacks.map((fb) => (
+                                            <li key={fb.id} className="p-4 border rounded-lg bg-white hover:shadow-sm transition-shadow">
+                                                <div className="flex justify-between items-start gap-4">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <span className="flex text-yellow-400 text-sm">
+                                                                {"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}
+                                                            </span>
+                                                            <span className="text-xs text-gray-400">
+                                                                {new Date(fb.created_at).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-gray-800 text-sm leading-relaxed">{fb.comment}</p>
+                                                        {fb.customer_contact && (
+                                                            <div className="mt-3 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded w-fit">
+                                                                <span>📞</span>
+                                                                <span className="font-medium">{fb.customer_contact}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                                                        onClick={() => handleMarkRead(fb.id)}
+                                                        title="Mark as read"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </button>
                                                 </div>
-                                                <button
-                                                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                                                    onClick={() => handleMarkRead(fb.id)}
-                                                >
-                                                    {t.markAsRead || "Segna come letto"}
-                                                </button>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </main>
         </div>
     );
 }
