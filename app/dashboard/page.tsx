@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { QRCodeCanvas } from "qrcode.react";
 import { useTranslation } from "@/lib/i18n";
+import jsPDF from "jspdf";
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -83,6 +84,32 @@ export default function DashboardPage() {
         else setFeedbacks((prev) => prev.filter((f) => f.id !== id));
     };
 
+    // ---- Download PDF with QR code ----------------------------------------
+    const downloadPDF = () => {
+        const canvas = document.querySelector("#qr-code-container canvas") as HTMLCanvasElement;
+        if (!canvas) return alert("QR Code not found");
+
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF();
+
+        // Add business name
+        pdf.setFontSize(24);
+        pdf.text(business.business_name || "Review Us!", 105, 40, { align: "center" });
+
+        // Add CTA
+        pdf.setFontSize(16);
+        pdf.text("Scan to leave a review", 105, 55, { align: "center" });
+
+        // Add QR Code
+        pdf.addImage(imgData, "PNG", 55, 70, 100, 100);
+
+        // Add footer
+        pdf.setFontSize(12);
+        pdf.text("Thank you for your feedback!", 105, 190, { align: "center" });
+
+        pdf.save(`${business.business_name || "review"}-poster.pdf`);
+    };
+
     if (loading) return <div className="p-4">{t.loading || "Caricamento..."}</div>;
 
     return (
@@ -117,13 +144,24 @@ export default function DashboardPage() {
             {business && (
                 <div className="text-center space-y-4">
                     <h2 className="text-xl font-semibold">{t.qrTitle}</h2>
-                    <QRCodeCanvas
-                        value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${business.id}`}
-                        size={200}
-                        level="H"
-                        includeMargin={true}
-                    />
+                    <div id="qr-code-container">
+                        <QRCodeCanvas
+                            value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${business.id}`}
+                            size={200}
+                            level="H"
+                            includeMargin={true}
+                        />
+                    </div>
                     <p className="mt-2 text-sm text-gray-600">{t.qrSubtitle}</p>
+                    <button
+                        onClick={downloadPDF}
+                        className="mt-4 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 flex items-center gap-2 mx-auto"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                        Download PDF Poster
+                    </button>
                 </div>
             )}
 
