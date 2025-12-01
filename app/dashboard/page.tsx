@@ -8,7 +8,8 @@ import { QRCodeCanvas } from "qrcode.react";
 import { useTranslation } from "@/lib/i18n";
 import jsPDF from "jspdf";
 import Analytics from "@/components/Analytics";
-import { Plus, ChevronDown, Building2 } from "lucide-react";
+import UpgradeBanner from "@/components/UpgradeBanner";
+import { Plus, ChevronDown, Building2, Lock } from "lucide-react";
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -24,6 +25,9 @@ export default function DashboardPage() {
     const [mapsLink, setMapsLink] = useState("");
     const [feedbacks, setFeedbacks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Mock Pro Status (replace with DB field later)
+    const [isPro, setIsPro] = useState(false);
 
     // ---- Auth check -------------------------------------------------------
     useEffect(() => {
@@ -55,6 +59,8 @@ export default function DashboardPage() {
             setBusinesses(data);
             if (data.length > 0 && !selectedBusiness) {
                 setSelectedBusiness(data[0]);
+                // Check if business is pro (mock for now)
+                setIsPro(data[0].is_pro || false);
             }
         }
         setLoading(false);
@@ -64,6 +70,7 @@ export default function DashboardPage() {
     useEffect(() => {
         if (selectedBusiness) {
             loadFeedbacks(selectedBusiness.id);
+            setIsPro(selectedBusiness.is_pro || false);
         } else {
             setFeedbacks([]);
         }
@@ -127,7 +134,16 @@ export default function DashboardPage() {
         pdf.save(`${selectedBusiness.business_name || "review"}-poster.pdf`);
     };
 
+    // ---- Handle Upgrade --------------------------------------------------
+    const handleUpgrade = () => {
+        // Here we will integrate Stripe Checkout later
+        alert("Stripe Checkout will open here!");
+    };
+
     if (loading) return <div className="p-4">{t.loading || "Caricamento..."}</div>;
+
+    // Limit feedbacks for free users
+    const visibleFeedbacks = isPro ? feedbacks : feedbacks.slice(0, 2);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -168,6 +184,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex items-center gap-4">
+                    {isPro && <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-full">PRO</span>}
                     <span className="text-sm text-gray-500">{session?.user?.email}</span>
                     <button
                         onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
@@ -227,94 +244,125 @@ export default function DashboardPage() {
                 )}
 
                 {selectedBusiness && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Left Column: QR Code & Actions */}
-                        <div className="lg:col-span-1 space-y-6">
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-                                <h2 className="text-lg font-semibold mb-4 text-gray-800">{t.qrTitle}</h2>
-                                <div id="qr-code-container" className="flex justify-center mb-6 bg-white p-4 rounded-lg">
-                                    <QRCodeCanvas
-                                        value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${selectedBusiness.id}`}
-                                        size={200}
-                                        level="H"
-                                        includeMargin={true}
-                                    />
-                                </div>
-                                <button
-                                    onClick={downloadPDF}
-                                    className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 font-medium transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                                    </svg>
-                                    Download PDF Poster
-                                </button>
-                                <p className="mt-4 text-xs text-gray-500">
-                                    Print this poster and place it in your store to get more reviews.
-                                </p>
-                            </div>
-                        </div>
+                    <>
+                        {!isPro && <UpgradeBanner onUpgrade={handleUpgrade} />}
 
-                        {/* Right Column: Analytics & Feedbacks */}
-                        <div className="lg:col-span-2 space-y-8">
-                            {/* Analytics Section */}
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                                <Analytics businessId={selectedBusiness.id} />
-                            </div>
-
-                            {/* Negative Feedbacks Section */}
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-lg font-semibold text-gray-800">{t.feedbackTitle}</h2>
-                                    <span className="bg-red-100 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                        {feedbacks.length} New
-                                    </span>
-                                </div>
-
-                                {feedbacks.length === 0 ? (
-                                    <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
-                                        <p className="text-gray-500">{t.noFeedback}</p>
-                                        <p className="text-xs text-gray-400 mt-1">Great job! No negative feedback yet.</p>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Left Column: QR Code & Actions */}
+                            <div className="lg:col-span-1 space-y-6">
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
+                                    <h2 className="text-lg font-semibold mb-4 text-gray-800">{t.qrTitle}</h2>
+                                    <div id="qr-code-container" className="flex justify-center mb-6 bg-white p-4 rounded-lg">
+                                        <QRCodeCanvas
+                                            value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${selectedBusiness.id}`}
+                                            size={200}
+                                            level="H"
+                                            includeMargin={true}
+                                        />
                                     </div>
-                                ) : (
-                                    <ul className="space-y-4">
-                                        {feedbacks.map((fb) => (
-                                            <li key={fb.id} className="p-4 border rounded-lg bg-white hover:shadow-sm transition-shadow">
-                                                <div className="flex justify-between items-start gap-4">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <span className="flex text-yellow-400 text-sm">
-                                                                {"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}
-                                                            </span>
-                                                            <span className="text-xs text-gray-400">
-                                                                {new Date(fb.created_at).toLocaleDateString()}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-gray-800 text-sm leading-relaxed">{fb.comment}</p>
-                                                        {fb.customer_contact && (
-                                                            <div className="mt-3 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded w-fit">
-                                                                <span>📞</span>
-                                                                <span className="font-medium">{fb.customer_contact}</span>
+                                    <button
+                                        onClick={downloadPDF}
+                                        className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 font-medium transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                                        </svg>
+                                        Download PDF Poster
+                                    </button>
+                                    <p className="mt-4 text-xs text-gray-500">
+                                        Print this poster and place it in your store to get more reviews.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Analytics & Feedbacks */}
+                            <div className="lg:col-span-2 space-y-8">
+                                {/* Analytics Section - Blurred for free users */}
+                                <div className={`bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative ${!isPro ? 'overflow-hidden' : ''}`}>
+                                    {!isPro && (
+                                        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
+                                            <div className="text-center p-6">
+                                                <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                                <p className="font-semibold text-gray-800">Analytics Locked</p>
+                                                <p className="text-sm text-gray-500 mb-4">Upgrade to Pro to see detailed insights.</p>
+                                                <button onClick={handleUpgrade} className="text-indigo-600 font-medium hover:underline">
+                                                    Unlock Analytics
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <Analytics businessId={selectedBusiness.id} />
+                                </div>
+
+                                {/* Negative Feedbacks Section */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-lg font-semibold text-gray-800">{t.feedbackTitle}</h2>
+                                        <span className="bg-red-100 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                            {feedbacks.length} Total
+                                        </span>
+                                    </div>
+
+                                    {feedbacks.length === 0 ? (
+                                        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
+                                            <p className="text-gray-500">{t.noFeedback}</p>
+                                            <p className="text-xs text-gray-400 mt-1">Great job! No negative feedback yet.</p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <ul className="space-y-4">
+                                                {visibleFeedbacks.map((fb) => (
+                                                    <li key={fb.id} className="p-4 border rounded-lg bg-white hover:shadow-sm transition-shadow">
+                                                        <div className="flex justify-between items-start gap-4">
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-2 mb-2">
+                                                                    <span className="flex text-yellow-400 text-sm">
+                                                                        {"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}
+                                                                    </span>
+                                                                    <span className="text-xs text-gray-400">
+                                                                        {new Date(fb.created_at).toLocaleDateString()}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-gray-800 text-sm leading-relaxed">{fb.comment}</p>
+                                                                {fb.customer_contact && (
+                                                                    <div className="mt-3 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded w-fit">
+                                                                        <span>📞</span>
+                                                                        <span className="font-medium">{fb.customer_contact}</span>
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                        )}
-                                                    </div>
+                                                            <button
+                                                                className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                                                                onClick={() => handleMarkRead(fb.id)}
+                                                                title="Mark as read"
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            {!isPro && feedbacks.length > 2 && (
+                                                <div className="mt-4 text-center p-4 bg-gray-50 rounded-lg border border-dashed">
+                                                    <p className="text-sm text-gray-600 mb-2">
+                                                        {feedbacks.length - 2} more feedbacks hidden
+                                                    </p>
                                                     <button
-                                                        className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
-                                                        onClick={() => handleMarkRead(fb.id)}
-                                                        title="Mark as read"
+                                                        onClick={handleUpgrade}
+                                                        className="text-indigo-600 font-medium text-sm hover:underline"
                                                     >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                        </svg>
+                                                        Upgrade to see all feedbacks
                                                     </button>
                                                 </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
+                                            )}
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </>
                 )}
             </main>
         </div>
