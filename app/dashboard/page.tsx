@@ -12,20 +12,6 @@ import UpgradeBanner from "@/components/UpgradeBanner";
 import { Plus, ChevronDown, Building2, Lock, CheckCircle } from "lucide-react";
 
 export default function DashboardPage() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const { t } = useTranslation();
-    const [session, setSession] = useState<any>(null);
-
-    // Multi-business state
-    const [businesses, setBusinesses] = useState<any[]>([]);
-    const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
-    const [showCreateForm, setShowCreateForm] = useState(false);
-
-    const [name, setName] = useState("");
-    const [mapsLink, setMapsLink] = useState("");
-    const [feedbacks, setFeedbacks] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
 
     // Mock Pro Status (replace with DB field later)
     const [isPro, setIsPro] = useState(false);
@@ -194,31 +180,45 @@ export default function DashboardPage() {
 
                     {/* Business Selector */}
                     {businesses.length > 0 && (
-                        <div className="relative group">
-                            <button className="flex items-center gap-2 px-3 py-1.5 border rounded-lg hover:bg-gray-50 text-sm font-medium">
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowMenu(!showMenu)}
+                                className="flex items-center gap-2 px-3 py-1.5 border rounded-lg hover:bg-gray-50 text-sm font-medium bg-white"
+                            >
                                 <Building2 className="w-4 h-4 text-gray-500" />
                                 {selectedBusiness?.business_name}
-                                <ChevronDown className="w-4 h-4 text-gray-400" />
+                                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showMenu ? 'rotate-180' : ''}`} />
                             </button>
 
-                            <div className="absolute top-full left-0 mt-1 w-56 bg-white border rounded-lg shadow-lg hidden group-hover:block py-1">
-                                {businesses.map(b => (
-                                    <button
-                                        key={b.id}
-                                        onClick={() => setSelectedBusiness(b)}
-                                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedBusiness?.id === b.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700'}`}
-                                    >
-                                        {b.business_name}
-                                    </button>
-                                ))}
-                                <div className="border-t my-1"></div>
-                                <button
-                                    onClick={() => setShowCreateForm(true)}
-                                    className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-gray-50 flex items-center gap-2"
-                                >
-                                    <Plus className="w-4 h-4" /> Add New Business
-                                </button>
-                            </div>
+                            {showMenu && (
+                                <>
+                                    <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)}></div>
+                                    <div className="absolute top-full left-0 mt-1 w-56 bg-white border rounded-lg shadow-lg z-20 py-1">
+                                        {businesses.map(b => (
+                                            <button
+                                                key={b.id}
+                                                onClick={() => {
+                                                    setSelectedBusiness(b);
+                                                    setShowMenu(false);
+                                                }}
+                                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedBusiness?.id === b.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700'}`}
+                                            >
+                                                {b.business_name}
+                                            </button>
+                                        ))}
+                                        <div className="border-t my-1"></div>
+                                        <button
+                                            onClick={() => {
+                                                setShowCreateForm(true);
+                                                setShowMenu(false);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-gray-50 flex items-center gap-2"
+                                        >
+                                            <Plus className="w-4 h-4" /> Add New Business
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>
