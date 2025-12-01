@@ -67,15 +67,39 @@ export default function ReviewPage() {
         if (!rating) return alert("Seleziona una valutazione");
         if (rating <= 3 && (!comment || !contact))
             return alert("Compila commento e contatto per feedback negativo");
+
         const payload: any = {
             business_id: businessId,
             rating,
             comment: rating <= 3 ? comment : null,
             customer_contact: rating <= 3 ? contact : null,
         };
+
         const { error } = await supabase.from("feedbacks").insert([payload]);
-        if (error) console.error(error);
-        else setSubmitted(true);
+
+        if (error) {
+            console.error(error);
+            alert("Errore nel salvataggio del feedback");
+        } else {
+            // Send email notification for negative feedback
+            if (rating <= 3) {
+                try {
+                    await fetch("/api/send-email", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            businessName: business.business_name,
+                            feedback: comment,
+                            rating,
+                            customerContact: contact,
+                        }),
+                    });
+                } catch (err) {
+                    console.error("Failed to send email notification", err);
+                }
+            }
+            setSubmitted(true);
+        }
     };
 
     if (!business) return <div className="p-4">Caricamento...</div>;
