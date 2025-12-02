@@ -3,7 +3,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { QRCodeCanvas } from "qrcode.react";
@@ -14,6 +14,14 @@ import UpgradeBanner from "@/components/UpgradeBanner";
 import { Plus, ChevronDown, Building2, Lock, CheckCircle } from "lucide-react";
 
 export default function DashboardPage() {
+    return (
+        <Suspense fallback={<div className="p-4">Caricamento...</div>}>
+            <DashboardContent />
+        </Suspense>
+    );
+}
+
+function DashboardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { t } = useTranslation();
