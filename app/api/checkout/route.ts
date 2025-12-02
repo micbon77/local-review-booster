@@ -2,9 +2,15 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2025-02-24.acacia", // Use latest API version
-});
+// Helper to get Stripe instance
+const getStripe = () => {
+    if (!process.env.STRIPE_SECRET_KEY) {
+        throw new Error("STRIPE_SECRET_KEY is missing");
+    }
+    return new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: "2025-02-24.acacia",
+    });
+};
 
 export async function POST(req: Request) {
     try {
@@ -13,6 +19,8 @@ export async function POST(req: Request) {
         if (!businessId || !email) {
             return NextResponse.json({ error: "Missing businessId or email" }, { status: 400 });
         }
+
+        const stripe = getStripe();
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],

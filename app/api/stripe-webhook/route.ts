@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
-// Force Vercel update
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2025-02-24.acacia",
-});
+// Helper to get Stripe instance
+const getStripe = () => {
+    if (!process.env.STRIPE_SECRET_KEY) {
+        throw new Error("STRIPE_SECRET_KEY is missing");
+    }
+    return new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: "2025-02-24.acacia",
+    });
+};
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,6 +28,7 @@ export async function POST(request: Request) {
     let event: Stripe.Event;
 
     try {
+        const stripe = getStripe();
         event = stripe.webhooks.constructEvent(
             body,
             signature,
