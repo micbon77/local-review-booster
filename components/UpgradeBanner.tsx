@@ -17,7 +17,7 @@ export default function UpgradeBanner({ onUpgrade }: { onUpgrade: () => void }) 
                     </h3>
                     <p className="text-indigo-100 max-w-xl">
                         Unlock unlimited feedbacks, advanced analytics, and remove all limits.
-                        Get the most out of your reviews for just $9.99/month.
+                        Get the most out of your reviews for just €9.99/month.
                     </p>
                 </div>
                 <button
