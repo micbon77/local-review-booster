@@ -27,12 +27,12 @@ export async function POST(req: Request) {
             line_items: [
                 {
                     price_data: {
-                        currency: "usd",
+                        currency: "eur",
                         product_data: {
                             name: "Review Booster Pro",
                             description: "Unlimited feedbacks and advanced analytics",
                         },
-                        unit_amount: 999, // $9.99
+                        unit_amount: 999, // €9.99
                         recurring: {
                             interval: "month",
                         },
