@@ -1,22 +1,21 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
     try {
         const { businessName, feedback, rating, customerContact } = await request.json();
 
-        // In a real app, you would fetch the business owner's email from the database
-        // For this MVP, we'll send it to a configured notification email or the business owner if available
-        // For now, let's assume we send it to a fixed address or the one from the request if we had it.
-        // Since we don't have the owner's email passed here, we might need to fetch it.
-        // But to keep it simple, let's just log it if no key is present, or try to send if key exists.
-
+        // Check if Resend is available
         if (!process.env.RESEND_API_KEY) {
-            console.log('Resend API Key missing. Email would have been sent:', { businessName, feedback, rating });
-            return NextResponse.json({ success: true, message: 'Email logged (no API key)' });
+            console.log('Resend API Key missing. Email notification skipped:', { businessName, feedback, rating });
+            return NextResponse.json({
+                success: true,
+                message: 'Feedback received (email notification disabled)'
+            });
         }
+
+        // Dynamically import Resend only if API key is present
+        const { Resend } = await import('resend');
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
         const { data, error } = await resend.emails.send({
             from: 'Review Booster <onboarding@resend.dev>', // Default Resend testing domain
@@ -40,7 +39,11 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json(data);
-    } catch (error) {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    } catch (error: any) {
+        console.error('Email error:', error);
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            message: error.message
+        }, { status: 500 });
     }
 }
