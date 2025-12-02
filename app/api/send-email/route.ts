@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+// Force rebuild to clear Vercel cache
+
 export async function POST(request: Request) {
     try {
         const { businessName, feedback, rating, customerContact } = await request.json();
