@@ -35,6 +35,8 @@ function DashboardContent() {
 
     const [name, setName] = useState("");
     const [mapsLink, setMapsLink] = useState("");
+    const [trustpilotLink, setTrustpilotLink] = useState("");
+    const [reviewPlatform, setReviewPlatform] = useState<string>("google_maps");
     const [feedbacks, setFeedbacks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -101,12 +103,20 @@ function DashboardContent() {
 
     // ---- Create new business ---------------------------------------------
     const handleCreate = async () => {
-        if (!name || !mapsLink) return alert(t.error || "Compila tutti i campi");
-        const payload = {
+        // Validation based on selected platform
+        if (!name) return alert(t.error || "Compila il nome dell'attività");
+        if (reviewPlatform === 'google_maps' && !mapsLink) return alert("Inserisci il link Google Maps");
+        if (reviewPlatform === 'trustpilot' && !trustpilotLink) return alert("Inserisci il link Trustpilot");
+        if (reviewPlatform === 'both' && (!mapsLink || !trustpilotLink)) return alert("Inserisci entrambi i link");
+
+        const payload: any = {
             owner_id: session.user.id,
             business_name: name,
-            google_maps_link: mapsLink,
+            review_platform: reviewPlatform,
         };
+
+        if (mapsLink) payload.google_maps_link = mapsLink;
+        if (trustpilotLink) payload.trustpilot_link = trustpilotLink;
         const { data, error } = await supabase.from("businesses").insert([payload]).select();
         if (error) {
             console.error(error);
@@ -118,6 +128,8 @@ function DashboardContent() {
         setShowCreateForm(false);
         setName("");
         setMapsLink("");
+        setTrustpilotLink("");
+        setReviewPlatform("google_maps");
     };
 
     // ---- Load negative feedbacks ------------------------------------------
@@ -279,14 +291,41 @@ function DashboardContent() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.mapsLinkLabel || "Google Maps Link"}</label>
-                                    <input
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Review Platform</label>
+                                    <select
                                         className="w-full p-2 border rounded-lg"
-                                        placeholder="https://maps.google.com/..."
-                                        value={mapsLink}
-                                        onChange={(e) => setMapsLink(e.target.value)}
-                                    />
+                                        value={reviewPlatform}
+                                        onChange={(e) => setReviewPlatform(e.target.value)}
+                                        disabled={!isPro && businesses.length > 0}
+                                    >
+                                        <option value="google_maps">Google Maps</option>
+                                        <option value="trustpilot">Trustpilot</option>
+                                        {isPro && <option value="both">Both (Pro)</option>}
+                                    </select>
+                                    {!isPro && <p className="text-xs text-gray-500 mt-1">Free plan: choose one platform. Upgrade to Pro for both.</p>}
                                 </div>
+                                {(reviewPlatform === 'google_maps' || reviewPlatform === 'both') && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t.mapsLinkLabel || "Google Maps Link"}</label>
+                                        <input
+                                            className="w-full p-2 border rounded-lg"
+                                            placeholder="https://maps.google.com/..."
+                                            value={mapsLink}
+                                            onChange={(e) => setMapsLink(e.target.value)}
+                                        />
+                                    </div>
+                                )}
+                                {(reviewPlatform === 'trustpilot' || reviewPlatform === 'both') && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Trustpilot Review Link</label>
+                                        <input
+                                            className="w-full p-2 border rounded-lg"
+                                            placeholder="https://www.trustpilot.com/review/..."
+                                            value={trustpilotLink}
+                                            onChange={(e) => setTrustpilotLink(e.target.value)}
+                                        />
+                                    </div>
+                                )}
                                 <div className="flex gap-3 mt-6">
                                     {businesses.length > 0 && (
                                         <button

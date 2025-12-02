@@ -48,18 +48,28 @@ export default function ReviewPage() {
 
     // Handle positive rating (>=4)
     useEffect(() => {
-        if (rating >= 4 && business?.google_maps_link) {
-            // Fire confetti
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-            });
-            // Redirect after 2 seconds
-            const timer = setTimeout(() => {
-                window.location.href = business.google_maps_link;
-            }, 2000);
-            return () => clearTimeout(timer);
+        if (rating >= 4 && business) {
+            // Determine which link to use based on platform setting
+            let redirectUrl = '';
+            if (business.review_platform === 'both' || business.review_platform === 'google_maps') {
+                redirectUrl = business.google_maps_link;
+            } else if (business.review_platform === 'trustpilot') {
+                redirectUrl = business.trustpilot_link;
+            }
+
+            if (redirectUrl) {
+                // Fire confetti
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                });
+                // Redirect after 2 seconds
+                const timer = setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 2000);
+                return () => clearTimeout(timer);
+            }
         }
     }, [rating, business]);
 
