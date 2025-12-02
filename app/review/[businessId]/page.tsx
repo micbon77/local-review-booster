@@ -84,7 +84,7 @@ export default function ReviewPage() {
             // Send email notification for negative feedback
             if (rating <= 3) {
                 try {
-                    await fetch("/api/send-email", {
+                    await fetch("/api/email-notification", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
