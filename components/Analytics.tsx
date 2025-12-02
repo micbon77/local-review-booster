@@ -34,8 +34,8 @@ export default function Analytics({ businessId }: AnalyticsProps) {
         if (!allFeedbacks) return;
 
         // Calculate stats
-        const positive = allFeedbacks.filter((f) => f.rating >= 4).length;
-        const negative = allFeedbacks.filter((f) => f.rating <= 3).length;
+        const positive = allFeedbacks.filter((f: any) => f.rating >= 4).length;
+        const negative = allFeedbacks.filter((f: any) => f.rating <= 3).length;
         const total = allFeedbacks.length;
 
         setStats({
@@ -50,12 +50,12 @@ export default function Analytics({ businessId }: AnalyticsProps) {
             const date = startOfDay(subDays(new Date(), 6 - i));
             const dateStr = format(date, "yyyy-MM-dd");
             const dayFeedbacks = allFeedbacks.filter(
-                (f) => format(new Date(f.created_at), "yyyy-MM-dd") === dateStr
+                (f: any) => format(new Date(f.created_at), "yyyy-MM-dd") === dateStr
             );
             return {
                 date: format(date, "MMM dd"),
-                positive: dayFeedbacks.filter((f) => f.rating >= 4).length,
-                negative: dayFeedbacks.filter((f) => f.rating <= 3).length,
+                positive: dayFeedbacks.filter((f: any) => f.rating >= 4).length,
+                negative: dayFeedbacks.filter((f: any) => f.rating <= 3).length,
             };
         });
 
