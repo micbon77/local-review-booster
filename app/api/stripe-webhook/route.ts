@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+// Force Vercel update
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
