@@ -12,10 +12,16 @@ const getStripe = () => {
     });
 };
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Helper to get Supabase instance
+const getSupabase = () => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error("Supabase credentials missing");
+    }
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+};
 
 export async function POST(request: Request) {
     const body = await request.text();
@@ -40,6 +46,8 @@ export async function POST(request: Request) {
     }
 
     // Handle the event
+    const supabase = getSupabase();
+
     switch (event.type) {
         case 'checkout.session.completed': {
             const session = event.data.object as Stripe.Checkout.Session;
