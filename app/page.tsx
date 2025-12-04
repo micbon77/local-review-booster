@@ -94,7 +94,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Create Your Account</h3>
-                <p className="text-gray-600">Sign up and configure your Google Maps review link.</p>
+                <p className="text-gray-600">Sign up and configure your Google Maps or Trustpilot review link.</p>
               </div>
             </div>
             <div className="flex gap-4 items-start">
@@ -112,7 +112,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Customers Scan & Rate</h3>
-                <p className="text-gray-600">Happy customers (4-5 stars) go to Google Maps. Others leave private feedback.</p>
+                <p className="text-gray-600">Happy customers (4-5 stars) go to Google Maps or Trustpilot. Others leave private feedback.</p>
               </div>
             </div>
             <div className="flex gap-4 items-start">
