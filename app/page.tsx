@@ -151,7 +151,7 @@ export default function Home() {
       <footer className="mt-20 py-8 border-t bg-gray-50">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center">
-            <img src="/logo.png" alt="Local Review Boost" className="h-12" />
+            <img src="/logo.png" alt="Local Review Boost" className="h-72" />
           </div>
           <div className="text-center md:text-right text-gray-500 text-sm">
             <p>Local Review Booster &copy; {new Date().getFullYear()}</p>
