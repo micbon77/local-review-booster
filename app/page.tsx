@@ -10,7 +10,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center space-y-6 max-w-3xl mx-auto">
           <div className="flex justify-center mb-6">
-            <img src="/logo.png" alt="Local Review Boost" className="h-20" />
+            <img src="/logo.png" alt="Local Review Boost" className="h-40" />
           </div>
           <h1 className="text-5xl font-bold tracking-tight text-gray-900">
             Local Review Booster
