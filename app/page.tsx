@@ -146,6 +146,12 @@ export default function Home() {
           </Card>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="mt-20 py-8 border-t text-center text-gray-500 text-sm">
+        <p>Local Review Booster &copy; {new Date().getFullYear()}</p>
+        <p className="mt-2">P.IVA IT01358070553</p>
+      </footer>
     </div>
   )
 }
