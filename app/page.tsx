@@ -16,7 +16,7 @@ export default function Home() {
             Local Review Booster
           </h1>
           <p className="text-xl text-gray-600">
-            Turn negative feedback into opportunities. Redirect happy customers to Google Maps,
+            Turn negative feedback into opportunities. Redirect happy customers to Google Maps or Trustpilot,
             capture constructive feedback privately.
           </p>
           <div className="flex gap-4 justify-center pt-4">
@@ -42,7 +42,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                4-5 stars? Redirect to Google Maps. 1-3 stars? Capture feedback privately.
+                4-5 stars? Redirect to Google Maps or Trustpilot. 1-3 stars? Capture feedback privately.
               </CardDescription>
             </CardContent>
           </Card>
@@ -78,7 +78,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Increase your Google Maps rating by filtering out negative reviews before they go public.
+                Increase your Google Maps and Trustpilot ratings by filtering out negative reviews before they go public.
               </CardDescription>
             </CardContent>
           </Card>
