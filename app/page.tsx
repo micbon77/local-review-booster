@@ -148,9 +148,16 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-20 py-8 border-t text-center text-gray-500 text-sm">
-        <p>Local Review Booster &copy; {new Date().getFullYear()}</p>
-        <p className="mt-2">P.IVA IT01358070553</p>
+      <footer className="mt-20 py-8 border-t bg-gray-50">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center">
+            <img src="/logo.png" alt="Local Review Boost" className="h-12" />
+          </div>
+          <div className="text-center md:text-right text-gray-500 text-sm">
+            <p>Local Review Booster &copy; {new Date().getFullYear()}</p>
+            <p className="mt-1">P.IVA IT01358070553</p>
+          </div>
+        </div>
       </footer>
     </div>
   )
