@@ -128,6 +128,9 @@ export default function ReviewPage() {
 
     return (
         <div className="max-w-md mx-auto p-4">
+            <div className="flex justify-center mb-6">
+                <img src="/logo.png" alt="Local Review Boost" className="h-12" />
+            </div>
             <h1 className="text-2xl font-bold mb-4 text-center">Come è stata la tua esperienza?</h1>
             <div className="flex justify-center mb-4">
                 <StarRating rating={rating} setRating={setRating} />

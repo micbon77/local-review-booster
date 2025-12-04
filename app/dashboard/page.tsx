@@ -213,7 +213,7 @@ function DashboardContent() {
             {/* Header / Navigation */}
             <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center gap-4">
-                    <h1 className="text-xl font-bold text-gray-800">Review Booster</h1>
+                    <img src="/logo.png" alt="Local Review Boost" className="h-10" />
 
                     {/* Business Selector */}
                     {businesses.length > 0 && (

@@ -42,6 +42,9 @@ export default function LoginPage() {
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <form className="bg-white p-6 rounded shadow-md w-80" onSubmit={handleAuth}>
+                <div className="flex justify-center mb-4">
+                    <img src="/logo.png" alt="Local Review Boost" className="h-16" />
+                </div>
                 <h2 className="text-2xl font-bold mb-4 text-center">
                     {isSignUp ? (t.signUpTitle || "Sign Up") : (t.signInTitle || "Sign In")}
                 </h2>
