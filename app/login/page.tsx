@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 import Footer from "@/components/Footer";
+import MarketingConsentCheckbox from "@/components/MarketingConsentCheckbox";
 
 export default function LoginPage() {
     const { t } = useTranslation();
@@ -13,6 +14,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isSignUp, setIsSignUp] = useState(false);
+    const [marketingConsent, setMarketingConsent] = useState(false);
     const router = useRouter();
 
     const handleAuth = async (e: React.FormEvent) => {
@@ -21,11 +23,25 @@ export default function LoginPage() {
 
         try {
             if (isSignUp) {
-                const { error } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                 });
                 if (error) throw error;
+
+                // Save marketing consent if user signed up
+                if (data.user && marketingConsent) {
+                    await fetch('/api/marketing-consent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: data.user.id,
+                            email: email,
+                            consentGiven: true,
+                        }),
+                    });
+                }
+
                 alert(t.checkEmailAlert || "Check your email to confirm your account!");
             } else {
                 const { error } = await supabase.auth.signInWithPassword({
@@ -66,6 +82,15 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
+
+                {/* Marketing Consent Checkbox - Only show during signup */}
+                {isSignUp && (
+                    <MarketingConsentCheckbox
+                        checked={marketingConsent}
+                        onChange={setMarketingConsent}
+                    />
+                )}
+
                 <button
                     type="submit"
                     className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 mb-2"
