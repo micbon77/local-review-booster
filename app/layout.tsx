@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,14 +26,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-      <head>
-        <script type="text/javascript" src="https://embeds.iubenda.com/widgets/6a4ed737-f1eb-4ae0-a1c0-a6f5cd7a7cd8.js" async></script>
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
         <SpeedInsights />
+        <Script
+          src="https://embeds.iubenda.com/widgets/6a4ed737-f1eb-4ae0-a1c0-a6f5cd7a7cd8.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
