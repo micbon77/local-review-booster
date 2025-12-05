@@ -28,18 +28,32 @@ export default function LoginPage() {
                 });
                 if (error) throw error;
 
+
                 // Save marketing consent if user signed up
                 if (data.user && marketingConsent) {
-                    await fetch('/api/marketing-consent', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            userId: data.user.id,
-                            email: email,
-                            consentGiven: true,
-                        }),
-                    });
+                    try {
+                        console.log("Saving marketing consent for:", email);
+                        const response = await fetch('/api/marketing-consent', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: data.user.id,
+                                email: email,
+                                consentGiven: true,
+                            }),
+                        });
+
+                        const result = await response.json();
+                        if (response.ok) {
+                            console.log("Marketing consent saved successfully:", result);
+                        } else {
+                            console.error("Failed to save marketing consent:", result);
+                        }
+                    } catch (consentError) {
+                        console.error("Error saving marketing consent:", consentError);
+                    }
                 }
+
 
                 alert(t.checkEmailAlert || "Check your email to confirm your account!");
             } else {
