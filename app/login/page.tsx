@@ -33,7 +33,7 @@ export default function LoginPage() {
                 if (data.user && marketingConsent) {
                     try {
                         console.log("Saving marketing consent for:", email);
-                        const response = await fetch('/api/marketing-consent', {
+                        const response = await fetch('/api/consent', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
