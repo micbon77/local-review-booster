@@ -82,31 +82,32 @@ export default function LoginPage() {
                     required
                 />
 
-                {/* DEBUG: Marketing Consent Checkbox - Always visible for testing */}
-                <div className="flex items-start gap-2 mb-4 border-2 border-red-500 p-2">
-                    <input
-                        type="checkbox"
-                        id="marketing-consent"
-                        checked={marketingConsent}
-                        onChange={(e) => setMarketingConsent(e.target.checked)}
-                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
-                    />
-                    <label
-                        htmlFor="marketing-consent"
-                        className="text-sm text-gray-700 cursor-pointer"
-                    >
-                        <strong className="text-red-600">DEBUG MODE - isSignUp: {isSignUp ? "TRUE" : "FALSE"}</strong><br />
-                        Acconsento a ricevere email marketing, newsletter e aggiornamenti da Local Review Boost.{" "}
-                        <a
-                            href="https://www.iubenda.com/privacy-policy/52538758"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                {/* Marketing Consent Checkbox - Only show during signup */}
+                {isSignUp && (
+                    <div className="flex items-start gap-2 mb-4">
+                        <input
+                            type="checkbox"
+                            id="marketing-consent"
+                            checked={marketingConsent}
+                            onChange={(e) => setMarketingConsent(e.target.checked)}
+                            className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                        />
+                        <label
+                            htmlFor="marketing-consent"
+                            className="text-sm text-gray-700 cursor-pointer"
                         >
-                            Privacy Policy
-                        </a>
-                    </label>
-                </div>
+                            Acconsento a ricevere email marketing, newsletter e aggiornamenti da Local Review Boost.{" "}
+                            <a
+                                href="https://www.iubenda.com/privacy-policy/52538758"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                            >
+                                Privacy Policy
+                            </a>
+                        </label>
+                    </div>
+                )}
 
                 <button
                     type="submit"
