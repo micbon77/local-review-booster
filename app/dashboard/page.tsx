@@ -11,6 +11,7 @@ import { useTranslation } from "@/lib/i18n";
 import jsPDF from "jspdf";
 import Analytics from "@/components/Analytics";
 import UpgradeBanner from "@/components/UpgradeBanner";
+import Footer from "@/components/Footer";
 import { Plus, ChevronDown, Building2, Lock, CheckCircle } from "lucide-react";
 
 export default function DashboardPage() {
@@ -469,6 +470,7 @@ function DashboardContent() {
                     </>
                 )}
             </main>
+            <Footer />
         </div>
     );
 }

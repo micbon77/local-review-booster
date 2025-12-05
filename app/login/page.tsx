@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
+import Footer from "@/components/Footer";
 
 export default function LoginPage() {
     const { t } = useTranslation();
@@ -79,6 +80,7 @@ export default function LoginPage() {
                     {isSignUp ? (t.switchToSignIn || "Already have an account? Sign In") : (t.switchToSignUp || "Need an account? Sign Up")}
                 </button>
             </form>
+            <Footer />
         </div>
     );
 }

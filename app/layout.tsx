@@ -24,7 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="it">
+      <head>
+        <script type="text/javascript" src="https://embeds.iubenda.com/widgets/6a4ed737-f1eb-4ae0-a1c0-a6f5cd7a7cd8.js" async></script>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
