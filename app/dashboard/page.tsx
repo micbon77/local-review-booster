@@ -38,6 +38,9 @@ function DashboardContent() {
     // Tab state
     const [activeTab, setActiveTab] = useState<"businesses" | "marketing">("businesses");
 
+    // Admin check
+    const isAdmin = session?.user?.email === "michelebonanno1977@gmail.com";
+
     const [name, setName] = useState("");
     const [mapsLink, setMapsLink] = useState("");
     const [trustpilotLink, setTrustpilotLink] = useState("");
@@ -277,8 +280,8 @@ function DashboardContent() {
                 </div>
             </nav>
 
-            {/* Tabs */}
-            {session && (
+            {/* Tabs - Only for Admin */}
+            {session && isAdmin && (
                 <div className="bg-white border-b sticky top-[81px] z-10">
                     <div className="max-w-6xl mx-auto px-6 flex space-x-8">
                         <button
@@ -306,11 +309,11 @@ function DashboardContent() {
             )}
 
             <main className="max-w-6xl mx-auto p-6">
-                {activeTab === "marketing" && session && (
+                {activeTab === "marketing" && session && isAdmin && (
                     <EmailMarketing userId={session.user.id} />
                 )}
 
-                {activeTab === "businesses" && (
+                {(activeTab === "businesses" || !isAdmin) && (
                     <>
                         {/* Create Business Modal/Form */}
                         {(showCreateForm || businesses.length === 0) && (
