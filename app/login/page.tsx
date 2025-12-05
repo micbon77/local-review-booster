@@ -75,7 +75,7 @@ export default function LoginPage() {
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
             <main className="flex-1 flex items-center justify-center p-4">
-                <form className="bg-white p-6 rounded shadow-md w-full max-w-sm" onSubmit={handleAuth}>
+                <form className="bg-white p-6 rounded shadow-md w-full max-w-sm" onSubmit={handleAuth} method="post" action="#">
                     <div className="flex justify-center mb-4">
                         <img src="/logo.png" alt="Local Review Boost" className="h-40 object-contain" />
                     </div>
