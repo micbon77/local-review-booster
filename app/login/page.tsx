@@ -85,6 +85,8 @@ export default function LoginPage() {
                     {error && <p className="text-red-500 mb-2 text-sm">{error}</p>}
                     <input
                         type="email"
+                        name="email"
+                        autoComplete="email"
                         placeholder={t.emailPlaceholder || "Email"}
                         className="w-full p-2 border rounded mb-3"
                         value={email}
@@ -93,6 +95,8 @@ export default function LoginPage() {
                     />
                     <input
                         type="password"
+                        name="password"
+                        autoComplete={isSignUp ? "new-password" : "current-password"}
                         placeholder={t.passwordPlaceholder || "Password"}
                         className="w-full p-2 border rounded mb-4"
                         value={password}
