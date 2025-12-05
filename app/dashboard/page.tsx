@@ -39,7 +39,7 @@ function DashboardContent() {
     const [activeTab, setActiveTab] = useState<"businesses" | "marketing">("businesses");
 
     // Admin check
-    const isAdmin = session?.user?.email === "michelebonanno1977@gmail.com";
+    const isAdmin = session?.user?.email?.toLowerCase() === "michelebonanno1977@gmail.com";
 
     const [name, setName] = useState("");
     const [mapsLink, setMapsLink] = useState("");
@@ -57,7 +57,10 @@ function DashboardContent() {
         async function getSession() {
             const { data, error } = await supabase.auth.getSession();
             if (error) console.error(error);
-            if (data?.session) setSession(data.session);
+            if (data?.session) {
+                console.log("Current User Email:", data.session.user.email); // DEBUG
+                setSession(data.session);
+            }
             else router.push("/login");
         }
         getSession();
@@ -78,6 +81,13 @@ function DashboardContent() {
         if (!session) return;
         loadBusinesses();
     }, [session]);
+
+    // ---- Force Pro for Admin --------------------------------------------
+    useEffect(() => {
+        if (isAdmin) {
+             setIsPro(true);
+        }
+    }, [isAdmin]);
 
     const loadBusinesses = async () => {
         const { data, error } = await supabase
@@ -103,7 +113,9 @@ function DashboardContent() {
     useEffect(() => {
         if (selectedBusiness) {
             loadFeedbacks(selectedBusiness.id);
-            setIsPro(selectedBusiness.is_pro || searchParams.get("success") === "true" || isAdmin || false);
+            // Re-apply Pro logic
+            const isBusinessPro = selectedBusiness.is_pro || searchParams.get("success") === "true";
+            setIsPro(isBusinessPro || isAdmin || false);
         } else {
             setFeedbacks([]);
         }
