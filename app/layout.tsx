@@ -34,6 +34,25 @@ export default function RootLayout({
       >
         {children}
         <SpeedInsights />
+
+        {/* Iubenda Consent Database */}
+        <Script
+          id="iubenda-consent-db"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              var _iub = _iub || {}; 
+              _iub.cons_instructions = _iub.cons_instructions || []; 
+              _iub.cons_instructions.push(["init", {api_key: "4rcjJvt75S8UiQkczGfa9zlyyvnd4E4g"}]);
+            `
+          }}
+        />
+        <Script
+          src="https://cdn.iubenda.com/cons/iubenda_cons.js"
+          strategy="afterInteractive"
+        />
+
+        {/* Iubenda Widget */}
         <Script
           src="https://embeds.iubenda.com/widgets/6a4ed737-f1eb-4ae0-a1c0-a6f5cd7a7cd8.js"
           strategy="afterInteractive"
