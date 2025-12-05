@@ -6,7 +6,7 @@ export default function Footer() {
                 {/* Legal Links */}
                 <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
                     <a
-                        href="https://www.iubenda.com/api/privacy-policy/52538758"
+                        href="https://www.iubenda.com/privacy-policy/52538758"
                         className="hover:text-blue-600 transition-colors"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -15,7 +15,7 @@ export default function Footer() {
                     </a>
                     <span className="text-gray-400">•</span>
                     <a
-                        href="https://www.iubenda.com/api/privacy-policy/52538758/cookie-policy"
+                        href="https://www.iubenda.com/privacy-policy/52538758/cookie-policy"
                         className="hover:text-blue-600 transition-colors"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -24,7 +24,7 @@ export default function Footer() {
                     </a>
                     <span className="text-gray-400">•</span>
                     <a
-                        href="https://www.iubenda.com/api/termini-e-condizioni/52538758"
+                        href="https://www.iubenda.com/termini-e-condizioni/52538758"
                         className="hover:text-blue-600 transition-colors"
                         target="_blank"
                         rel="noopener noreferrer"
