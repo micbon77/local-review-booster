@@ -92,8 +92,8 @@ function DashboardContent() {
             setBusinesses(data);
             if (data.length > 0 && !selectedBusiness) {
                 setSelectedBusiness(data[0]);
-                // Check if business is pro (mock for now)
-                setIsPro(data[0].is_pro || searchParams.get("success") === "true" || false);
+                // Check if business is pro or if user is admin
+                setIsPro(data[0].is_pro || searchParams.get("success") === "true" || isAdmin || false);
             }
         }
         setLoading(false);
@@ -103,11 +103,11 @@ function DashboardContent() {
     useEffect(() => {
         if (selectedBusiness) {
             loadFeedbacks(selectedBusiness.id);
-            setIsPro(selectedBusiness.is_pro || searchParams.get("success") === "true" || false);
+            setIsPro(selectedBusiness.is_pro || searchParams.get("success") === "true" || isAdmin || false);
         } else {
             setFeedbacks([]);
         }
-    }, [selectedBusiness]);
+    }, [selectedBusiness, isAdmin]);
 
     // ---- Create new business ---------------------------------------------
     const handleCreate = async () => {
