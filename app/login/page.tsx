@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 import Footer from "@/components/Footer";
-import MarketingConsentCheckbox from "@/components/MarketingConsentCheckbox";
 
 export default function LoginPage() {
     const { t } = useTranslation();
@@ -83,13 +82,30 @@ export default function LoginPage() {
                     required
                 />
 
-                {/* Marketing Consent Checkbox - Only show during signup */}
+                {/* Marketing Consent Checkbox - Inline version */}
                 {isSignUp && (
-                    <div className="mb-4">
-                        <MarketingConsentCheckbox
+                    <div className="flex items-start gap-2 mb-4">
+                        <input
+                            type="checkbox"
+                            id="marketing-consent"
                             checked={marketingConsent}
-                            onChange={setMarketingConsent}
+                            onChange={(e) => setMarketingConsent(e.target.checked)}
+                            className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
                         />
+                        <label
+                            htmlFor="marketing-consent"
+                            className="text-sm text-gray-700 cursor-pointer"
+                        >
+                            Acconsento a ricevere email marketing, newsletter e aggiornamenti da Local Review Boost.{" "}
+                            <a
+                                href="https://www.iubenda.com/privacy-policy/52538758"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                            >
+                                Privacy Policy
+                            </a>
+                        </label>
                     </div>
                 )}
 
