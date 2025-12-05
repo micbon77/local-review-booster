@@ -85,10 +85,12 @@ export default function LoginPage() {
 
                 {/* Marketing Consent Checkbox - Only show during signup */}
                 {isSignUp && (
-                    <MarketingConsentCheckbox
-                        checked={marketingConsent}
-                        onChange={setMarketingConsent}
-                    />
+                    <div className="mb-4">
+                        <MarketingConsentCheckbox
+                            checked={marketingConsent}
+                            onChange={setMarketingConsent}
+                        />
+                    </div>
                 )}
 
                 <button
