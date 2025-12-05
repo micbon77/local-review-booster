@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Local Review Boost - Gestisci le recensioni della tua attività",
   description: "Raccogli feedback positivi e negativi, migliora la tua reputazione online e aumenta le recensioni su Google Maps e Trustpilot.",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
