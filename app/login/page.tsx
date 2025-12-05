@@ -145,7 +145,6 @@ export default function LoginPage() {
                         {isSignUp ? (t.switchToSignIn || "Already have an account? Sign In") : (t.switchToSignUp || "Need an account? Sign Up")}
                     </button>
                 </form>
-                </form>
 
                 <div className="mt-4 w-full max-w-sm">
                     <div className="relative">
