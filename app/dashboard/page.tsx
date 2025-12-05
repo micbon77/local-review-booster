@@ -277,204 +277,238 @@ function DashboardContent() {
                 </div>
             </nav>
 
-            <main className="max-w-6xl mx-auto p-6">
-                {/* Create Business Modal/Form */}
-                {(showCreateForm || businesses.length === 0) && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                            <h2 className="text-xl font-bold mb-4">
-                                {businesses.length === 0 ? (t.welcomeCreate || "Welcome! Create your first business") : (t.addNewBusiness || "Add New Business")}
-                            </h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.businessNameLabel || "Business Name"}</label>
-                                    <input
-                                        className="w-full p-2 border rounded-lg"
-                                        placeholder="e.g. Mario's Pizza"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Review Platform</label>
-                                    <select
-                                        className="w-full p-2 border rounded-lg"
-                                        value={reviewPlatform}
-                                        onChange={(e) => setReviewPlatform(e.target.value)}
-                                        disabled={!isPro && businesses.length > 0}
-                                    >
-                                        <option value="google_maps">Google Maps</option>
-                                        <option value="trustpilot">Trustpilot</option>
-                                        {isPro && <option value="both">Both (Pro)</option>}
-                                    </select>
-                                    {!isPro && <p className="text-xs text-gray-500 mt-1">Free plan: choose one platform. Upgrade to Pro for both.</p>}
-                                </div>
-                                {(reviewPlatform === 'google_maps' || reviewPlatform === 'both') && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t.mapsLinkLabel || "Google Maps Link"}</label>
-                                        <input
-                                            className="w-full p-2 border rounded-lg"
-                                            placeholder="https://maps.google.com/..."
-                                            value={mapsLink}
-                                            onChange={(e) => setMapsLink(e.target.value)}
-                                        />
-                                    </div>
-                                )}
-                                {(reviewPlatform === 'trustpilot' || reviewPlatform === 'both') && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Trustpilot Review Link</label>
-                                        <input
-                                            className="w-full p-2 border rounded-lg"
-                                            placeholder="https://www.trustpilot.com/review/..."
-                                            value={trustpilotLink}
-                                            onChange={(e) => setTrustpilotLink(e.target.value)}
-                                        />
-                                    </div>
-                                )}
-                                <div className="flex gap-3 mt-6">
-                                    {businesses.length > 0 && (
-                                        <button
-                                            onClick={() => setShowCreateForm(false)}
-                                            className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                                        >
-                                            {t.cancelButton || "Cancel"}
-                                        </button>
-                                    )}
-                                    <button
-                                        className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                                        onClick={handleCreate}
-                                    >
-                                        {t.createBusinessButton || "Create Business"}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+            {/* Tabs */}
+            {session && (
+                <div className="bg-white border-b sticky top-[81px] z-10">
+                    <div className="max-w-6xl mx-auto px-6 flex space-x-8">
+                        <button
+                            onClick={() => setActiveTab("businesses")}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === "businesses"
+                                ? "border-blue-500 text-blue-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                }`}
+                        >
+                            <Building2 className="w-5 h-5" />
+                            Gestione Attività
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("marketing")}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === "marketing"
+                                ? "border-blue-500 text-blue-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                }`}
+                        >
+                            <Mail className="w-5 h-5" />
+                            Email Marketing
+                        </button>
                     </div>
+                </div>
+            )}
+
+            <main className="max-w-6xl mx-auto p-6">
+                {activeTab === "marketing" && session && (
+                    <EmailMarketing userId={session.user.id} />
                 )}
 
-                {selectedBusiness && (
+                {activeTab === "businesses" && (
                     <>
-                        {!isPro && <UpgradeBanner onUpgrade={handleUpgrade} />}
-
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Left Column: QR Code & Actions */}
-                            <div className="lg:col-span-1 space-y-6">
-                                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-                                    <h2 className="text-lg font-semibold mb-4 text-gray-800">{t.qrTitle}</h2>
-                                    <div id="qr-code-container" className="flex justify-center mb-6 bg-white p-4 rounded-lg">
-                                        <QRCodeCanvas
-                                            value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${selectedBusiness.id}`}
-                                            size={200}
-                                            level="H"
-                                            includeMargin={true}
-                                        />
+                        {/* Create Business Modal/Form */}
+                        {(showCreateForm || businesses.length === 0) && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+                                    <h2 className="text-xl font-bold mb-4">
+                                        {businesses.length === 0 ? (t.welcomeCreate || "Welcome! Create your first business") : (t.addNewBusiness || "Add New Business")}
+                                    </h2>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">{t.businessNameLabel || "Business Name"}</label>
+                                            <input
+                                                className="w-full p-2 border rounded-lg"
+                                                placeholder="e.g. Mario's Pizza"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Review Platform</label>
+                                            <select
+                                                className="w-full p-2 border rounded-lg"
+                                                value={reviewPlatform}
+                                                onChange={(e) => setReviewPlatform(e.target.value)}
+                                                disabled={!isPro && businesses.length > 0}
+                                            >
+                                                <option value="google_maps">Google Maps</option>
+                                                <option value="trustpilot">Trustpilot</option>
+                                                {isPro && <option value="both">Both (Pro)</option>}
+                                            </select>
+                                            {!isPro && <p className="text-xs text-gray-500 mt-1">Free plan: choose one platform. Upgrade to Pro for both.</p>}
+                                        </div>
+                                        {(reviewPlatform === 'google_maps' || reviewPlatform === 'both') && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">{t.mapsLinkLabel || "Google Maps Link"}</label>
+                                                <input
+                                                    className="w-full p-2 border rounded-lg"
+                                                    placeholder="https://maps.google.com/..."
+                                                    value={mapsLink}
+                                                    onChange={(e) => setMapsLink(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
+                                        {(reviewPlatform === 'trustpilot' || reviewPlatform === 'both') && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Trustpilot Review Link</label>
+                                                <input
+                                                    className="w-full p-2 border rounded-lg"
+                                                    placeholder="https://www.trustpilot.com/review/..."
+                                                    value={trustpilotLink}
+                                                    onChange={(e) => setTrustpilotLink(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
+                                        <div className="flex gap-3 mt-6">
+                                            {businesses.length > 0 && (
+                                                <button
+                                                    onClick={() => setShowCreateForm(false)}
+                                                    className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                                                >
+                                                    {t.cancelButton || "Cancel"}
+                                                </button>
+                                            )}
+                                            <button
+                                                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                                                onClick={handleCreate}
+                                            >
+                                                {t.createBusinessButton || "Create Business"}
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={downloadPDF}
-                                        className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 font-medium transition-colors"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                                        </svg>
-                                        {t.downloadPoster || "Download PDF Poster"}
-                                    </button>
-                                    <p className="mt-4 text-xs text-gray-500">
-                                        {t.printPosterHint || "Print this poster and place it in your store to get more reviews."}
-                                    </p>
                                 </div>
                             </div>
+                        )}
 
-                            {/* Right Column: Analytics & Feedbacks */}
-                            <div className="lg:col-span-2 space-y-8">
-                                {/* Analytics Section - Blurred for free users */}
-                                <div className={`bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative ${!isPro ? 'overflow-hidden' : ''}`}>
-                                    {!isPro && (
-                                        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
-                                            <div className="text-center p-6">
-                                                <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                                <p className="font-semibold text-gray-800">{t.analyticsLockedTitle || "Analytics Locked"}</p>
-                                                <p className="text-sm text-gray-500 mb-4">{t.analyticsLockedMessage || "Upgrade to Pro to see detailed insights."}</p>
-                                                <button onClick={handleUpgrade} className="text-indigo-600 font-medium hover:underline">
-                                                    {t.unlockAnalyticsButton || "Unlock Analytics"}
-                                                </button>
+                        {selectedBusiness && (
+                            <>
+                                {!isPro && <UpgradeBanner onUpgrade={handleUpgrade} />}
+
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                    {/* Left Column: QR Code & Actions */}
+                                    <div className="lg:col-span-1 space-y-6">
+                                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
+                                            <h2 className="text-lg font-semibold mb-4 text-gray-800">{t.qrTitle}</h2>
+                                            <div id="qr-code-container" className="flex justify-center mb-6 bg-white p-4 rounded-lg">
+                                                <QRCodeCanvas
+                                                    value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${selectedBusiness.id}`}
+                                                    size={200}
+                                                    level="H"
+                                                    includeMargin={true}
+                                                />
                                             </div>
+                                            <button
+                                                onClick={downloadPDF}
+                                                className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 font-medium transition-colors"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                </svg>
+                                                {t.downloadPoster || "Download PDF Poster"}
+                                            </button>
+                                            <p className="mt-4 text-xs text-gray-500">
+                                                {t.printPosterHint || "Print this poster and place it in your store to get more reviews."}
+                                            </p>
                                         </div>
-                                    )}
-                                    <Analytics businessId={selectedBusiness.id} />
-                                </div>
-
-                                {/* Negative Feedbacks Section */}
-                                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-lg font-semibold text-gray-800">{t.feedbackTitle}</h2>
-                                        <span className="bg-red-100 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                            {feedbacks.length} Total
-                                        </span>
                                     </div>
 
-                                    {feedbacks.length === 0 ? (
-                                        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
-                                            <p className="text-gray-500">{t.noFeedback}</p>
-                                            <p className="text-xs text-gray-400 mt-1">Great job! No negative feedback yet.</p>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <ul className="space-y-4">
-                                                {visibleFeedbacks.map((fb) => (
-                                                    <li key={fb.id} className="p-4 border rounded-lg bg-white hover:shadow-sm transition-shadow">
-                                                        <div className="flex justify-between items-start gap-4">
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center gap-2 mb-2">
-                                                                    <span className="flex text-yellow-400 text-sm">
-                                                                        {"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}
-                                                                    </span>
-                                                                    <span className="text-xs text-gray-400">
-                                                                        {new Date(fb.created_at).toLocaleDateString()}
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-gray-800 text-sm leading-relaxed">{fb.comment}</p>
-                                                                {fb.customer_contact && (
-                                                                    <div className="mt-3 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded w-fit">
-                                                                        <span>📞</span>
-                                                                        <span className="font-medium">{fb.customer_contact}</span>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <button
-                                                                className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
-                                                                onClick={() => handleMarkRead(fb.id)}
-                                                                title="Mark as read"
-                                                            >
-                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                            {!isPro && feedbacks.length > 2 && (
-                                                <div className="mt-4 text-center p-4 bg-gray-50 rounded-lg border border-dashed">
-                                                    <p className="text-sm text-gray-600 mb-2">
-                                                        {feedbacks.length - 2} more feedbacks hidden
-                                                    </p>
-                                                    <button
-                                                        onClick={handleUpgrade}
-                                                        className="text-indigo-600 font-medium text-sm hover:underline"
-                                                    >
-                                                        {t.upgradeToSeeAll || "Upgrade to see all feedbacks"}
-                                                    </button>
+                                    {/* Right Column: Analytics & Feedbacks */}
+                                    <div className="lg:col-span-2 space-y-8">
+                                        {/* Analytics Section - Blurred for free users */}
+                                        <div className={`bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative ${!isPro ? 'overflow-hidden' : ''}`}>
+                                            {!isPro && (
+                                                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
+                                                    <div className="text-center p-6">
+                                                        <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                                        <p className="font-semibold text-gray-800">{t.analyticsLockedTitle || "Analytics Locked"}</p>
+                                                        <p className="text-sm text-gray-500 mb-4">{t.analyticsLockedMessage || "Upgrade to Pro to see detailed insights."}</p>
+                                                        <button onClick={handleUpgrade} className="text-indigo-600 font-medium hover:underline">
+                                                            {t.unlockAnalyticsButton || "Unlock Analytics"}
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             )}
-                                        </>
-                                    )}
+                                            <Analytics businessId={selectedBusiness.id} />
+                                        </div>
+
+                                        {/* Negative Feedbacks Section */}
+                                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <h2 className="text-lg font-semibold text-gray-800">{t.feedbackTitle}</h2>
+                                                <span className="bg-red-100 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                                    {feedbacks.length} Total
+                                                </span>
+                                            </div>
+
+                                            {feedbacks.length === 0 ? (
+                                                <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
+                                                    <p className="text-gray-500">{t.noFeedback}</p>
+                                                    <p className="text-xs text-gray-400 mt-1">Great job! No negative feedback yet.</p>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <ul className="space-y-4">
+                                                        {visibleFeedbacks.map((fb) => (
+                                                            <li key={fb.id} className="p-4 border rounded-lg bg-white hover:shadow-sm transition-shadow">
+                                                                <div className="flex justify-between items-start gap-4">
+                                                                    <div className="flex-1">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <span className="flex text-yellow-400 text-sm">
+                                                                                {"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}
+                                                                            </span>
+                                                                            <span className="text-xs text-gray-400">
+                                                                                {new Date(fb.created_at).toLocaleDateString()}
+                                                                            </span>
+                                                                        </div>
+                                                                        <p className="text-gray-800 text-sm leading-relaxed">{fb.comment}</p>
+                                                                        {fb.customer_contact && (
+                                                                            <div className="mt-3 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded w-fit">
+                                                                                <span>📞</span>
+                                                                                <span className="font-medium">{fb.customer_contact}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    <button
+                                                                        className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                                                                        onClick={() => handleMarkRead(fb.id)}
+                                                                        title="Mark as read"
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                    {!isPro && feedbacks.length > 2 && (
+                                                        <div className="mt-4 text-center p-4 bg-gray-50 rounded-lg border border-dashed">
+                                                            <p className="text-sm text-gray-600 mb-2">
+                                                                {feedbacks.length - 2} more feedbacks hidden
+                                                            </p>
+                                                            <button
+                                                                onClick={handleUpgrade}
+                                                                className="text-indigo-600 font-medium text-sm hover:underline"
+                                                            >
+                                                                {t.upgradeToSeeAll || "Upgrade to see all feedbacks"}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </>
-                )}
-            </main>
-            <Footer />
+                            </>
+                        )}
+                    </main>
+                <Footer />
         </div>
     );
 }
