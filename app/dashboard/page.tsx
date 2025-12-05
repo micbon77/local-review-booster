@@ -12,7 +12,8 @@ import jsPDF from "jspdf";
 import Analytics from "@/components/Analytics";
 import UpgradeBanner from "@/components/UpgradeBanner";
 import Footer from "@/components/Footer";
-import { Plus, ChevronDown, Building2, Lock, CheckCircle } from "lucide-react";
+import { Plus, ChevronDown, Building2, Lock, CheckCircle, Mail } from "lucide-react";
+import EmailMarketing from "@/components/EmailMarketing";
 
 export default function DashboardPage() {
     return (
@@ -33,6 +34,9 @@ function DashboardContent() {
     const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+
+    // Tab state
+    const [activeTab, setActiveTab] = useState<"businesses" | "marketing">("businesses");
 
     const [name, setName] = useState("");
     const [mapsLink, setMapsLink] = useState("");
