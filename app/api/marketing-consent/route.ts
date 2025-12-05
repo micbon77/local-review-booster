@@ -56,13 +56,17 @@ export async function POST(req: NextRequest) {
         // If consent given, send welcome email directly
         if (consentGiven) {
             try {
+                console.log("[MARKETING-CONSENT] Starting welcome email send for:", email);
+                console.log("[MARKETING-CONSENT] RESEND_API_KEY configured:", !!process.env.RESEND_API_KEY);
+
                 const { Resend } = await import("resend");
                 const resend = new Resend(process.env.RESEND_API_KEY);
 
                 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://localreviewboost.click";
                 const unsubscribeUrl = `${baseUrl}/unsubscribe?userId=${userId}`;
 
-                await resend.emails.send({
+                console.log("[MARKETING-CONSENT] Calling resend.emails.send...");
+                const result = await resend.emails.send({
                     from: "Local Review Boost <onboarding@resend.dev>",
                     to: [email],
                     subject: "Benvenuto in Local Review Boost! 🎉",
@@ -113,9 +117,12 @@ export async function POST(req: NextRequest) {
                     `,
                 });
 
-                console.log("Welcome email sent successfully to:", email);
-            } catch (emailError) {
-                console.error("Error sending welcome email:", emailError);
+                console.log("[MARKETING-CONSENT] Welcome email sent successfully:", result);
+            } catch (emailError: any) {
+                console.error("[MARKETING-CONSENT] Error sending welcome email:");
+                console.error("[MARKETING-CONSENT] Error message:", emailError?.message);
+                console.error("[MARKETING-CONSENT] Error stack:", emailError?.stack);
+                console.error("[MARKETING-CONSENT] Full error:", JSON.stringify(emailError, null, 2));
                 // Don't fail the request if email fails
             }
         }
