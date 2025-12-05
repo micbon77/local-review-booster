@@ -1,8 +1,6 @@
 // components/MarketingConsentCheckbox.tsx
 "use client";
 
-import { useState } from "react";
-
 interface MarketingConsentCheckboxProps {
     checked: boolean;
     onChange: (checked: boolean) => void;
