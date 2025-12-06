@@ -20,10 +20,10 @@ export async function GET(req: Request) {
         // 2. Fetch all businesses
         const { data: businesses, error: businessError } = await supabaseAdmin
             .from('businesses')
-            .select`
+            .select(`
                 *,
                 feedbacks (count)
-            `;
+            `);
 
         if (businessError) throw businessError;
 
