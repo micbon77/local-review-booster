@@ -9,6 +9,21 @@ export async function POST(req: NextRequest) {
     const { email, userId } = await req.json();
 
     if (!email) {
+      return NextResponse.json(
+        { error: "Missing email" },
+        { status: 400 }
+      );
+    }
+
+    // Create unsubscribe URL
+    const baseUrl = "https://localreviewboost.click";
+    const unsubscribeUrl = `${baseUrl}/unsubscribe?userId=${userId}`;
+
+    // Send welcome email
+    const { data, error } = await resend.emails.send({
+      from: "Local Review Boost <noreply@localreviewboost.click>",
+      to: [email],
+      subject: "Benvenuto in Local Review Boost! 🎉",
       html: `
         <!DOCTYPE html>
         <html>
