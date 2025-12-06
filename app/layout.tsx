@@ -36,16 +36,11 @@ export default function RootLayout({
         <SpeedInsights />
 
         {/* Iubenda Consent Database */}
+        {/* Iubenda Consent Database */}
         <Script
           id="iubenda-consent-db"
+          src="/iubenda-init.js"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              var _iub = _iub || {}; 
-              _iub.cons_instructions = _iub.cons_instructions || []; 
-              _iub.cons_instructions.push(["init", {api_key: "4rcjJvt75S8UiQkczGfa9zlyyvnd4E4g"}]);
-            `
-          }}
         />
         <Script
           src="https://cdn.iubenda.com/cons/iubenda_cons.js"
