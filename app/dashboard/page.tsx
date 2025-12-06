@@ -12,8 +12,9 @@ import jsPDF from "jspdf";
 import Analytics from "@/components/Analytics";
 import UpgradeBanner from "@/components/UpgradeBanner";
 import Footer from "@/components/Footer";
-import { Plus, ChevronDown, Building2, Lock, CheckCircle, Mail } from "lucide-react";
+import { Plus, ChevronDown, Building2, Lock, CheckCircle, Mail, BarChart3 } from "lucide-react";
 import EmailMarketing from "@/components/EmailMarketing";
+import AdminStats from "@/components/AdminStats";
 
 export default function DashboardPage() {
     return (
@@ -36,7 +37,7 @@ function DashboardContent() {
     const [showMenu, setShowMenu] = useState(false);
 
     // Tab state
-    const [activeTab, setActiveTab] = useState<"businesses" | "marketing">("businesses");
+    const [activeTab, setActiveTab] = useState<"businesses" | "marketing" | "admin_stats">("businesses");
 
     // Admin check
     const isAdmin = session?.user?.email?.toLowerCase() === "michelebonanno1977@gmail.com";
@@ -85,7 +86,7 @@ function DashboardContent() {
     // ---- Force Pro for Admin --------------------------------------------
     useEffect(() => {
         if (isAdmin) {
-             setIsPro(true);
+            setIsPro(true);
         }
     }, [isAdmin]);
 
@@ -316,6 +317,16 @@ function DashboardContent() {
                             <Mail className="w-5 h-5" />
                             Email Marketing
                         </button>
+                        <button
+                            onClick={() => setActiveTab("admin_stats")}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === "admin_stats"
+                                ? "border-blue-500 text-blue-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                }`}
+                        >
+                            <BarChart3 className="w-5 h-5" />
+                            Admin Analytics
+                        </button>
                     </div>
                 </div>
             )}
@@ -323,6 +334,10 @@ function DashboardContent() {
             <main className="max-w-6xl mx-auto p-6">
                 {activeTab === "marketing" && session && isAdmin && (
                     <EmailMarketing userId={session.user.id} />
+                )}
+
+                {activeTab === "admin_stats" && session && isAdmin && (
+                    <AdminStats />
                 )}
 
                 {(activeTab === "businesses" || !isAdmin) && (
