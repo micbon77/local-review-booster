@@ -12,7 +12,7 @@ import jsPDF from "jspdf";
 import Analytics from "@/components/Analytics";
 import UpgradeBanner from "@/components/UpgradeBanner";
 import Footer from "@/components/Footer";
-import { Plus, ChevronDown, Building2, Lock, CheckCircle, Mail, BarChart3 } from "lucide-react";
+import { Plus, ChevronDown, Building2, Lock, CheckCircle, Mail, BarChart3, MessageCircle } from "lucide-react";
 import EmailMarketing from "@/components/EmailMarketing";
 import AdminStats from "@/components/AdminStats";
 
@@ -52,6 +52,9 @@ function DashboardContent() {
     // Mock Pro Status (replace with DB field later)
     const [isPro, setIsPro] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+
+    // AI Generation State
+    const [generating, setGenerating] = useState(false);
 
     // ---- Auth check -------------------------------------------------------
     useEffect(() => {
@@ -215,6 +218,51 @@ function DashboardContent() {
             alert("Failed to start checkout");
         }
     };
+
+    // ---- Handle WhatsApp Share (Pro) -------------------------------------
+    const handleWhatsAppShare = async () => {
+        if (!isPro) {
+            handleUpgrade();
+            return;
+        }
+
+        if (generating) return;
+        setGenerating(true);
+
+        try {
+            let textToShare = "";
+
+            // Generate AI Review Text
+            try {
+                const res = await fetch("/api/generate-review", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ businessName: selectedBusiness.business_name }),
+                });
+                const data = await res.json();
+                if (data.text) {
+                    textToShare += data.text + "\n\n";
+                }
+            } catch (err) {
+                console.error("AI Generation failed, falling back to default text", err);
+                textToShare += `Ciao! Lascia una recensione per ${selectedBusiness.business_name}: `;
+            }
+
+            // Append Link
+            const reviewLink = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${selectedBusiness.id}`;
+            textToShare += reviewLink;
+
+            // Open WhatsApp
+            window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
+
+        } catch (e) {
+            console.error(e);
+            alert("Errore durante la condivisione");
+        } finally {
+            setGenerating(false);
+        }
+    };
+
 
     if (loading) return <div className="p-4">{t.loading || "Caricamento..."}</div>;
 
@@ -433,15 +481,42 @@ function DashboardContent() {
                                                     includeMargin={true}
                                                 />
                                             </div>
-                                            <button
-                                                onClick={downloadPDF}
-                                                className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 font-medium transition-colors"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                                                </svg>
-                                                {t.downloadPoster || "Download PDF Poster"}
-                                            </button>
+                                            <div className="flex flex-col gap-3">
+                                                <button
+                                                    onClick={downloadPDF}
+                                                    className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 font-medium transition-colors"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                    </svg>
+                                                    {t.downloadPoster || "Download PDF Poster"}
+                                                </button>
+
+                                                {/* WhatsApp Share Button */}
+                                                <button
+                                                    onClick={handleWhatsAppShare}
+                                                    disabled={generating}
+                                                    className={`w-full px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 font-medium transition-colors ${isPro
+                                                            ? "bg-[#25D366] text-white hover:bg-[#20bd5a]"
+                                                            : "bg-gray-100 text-gray-400 cursor-pointer"
+                                                        }`}
+                                                >
+                                                    {generating ? (
+                                                        <>
+                                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                            Generazione ID...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <MessageCircle className="w-5 h-5" />
+                                                            Invia su WhatsApp {isPro ? "(AI)" : "(Pro)"}
+                                                        </>
+                                                    )}
+
+                                                    {!isPro && <Lock className="w-4 h-4 ml-1" />}
+                                                </button>
+                                            </div>
+
                                             <p className="mt-4 text-xs text-gray-500">
                                                 {t.printPosterHint || "Print this poster and place it in your store to get more reviews."}
                                             </p>
