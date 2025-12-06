@@ -255,10 +255,10 @@ function DashboardContent() {
                 alert("AI generation failed (Check API Key). Using default text.");
             }
 
-            // Append Link - FORCE PRODUCTION URL IF ENV IS MISSING
-            // using localreviewboost.click as primary fallback instead of localhost
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://localreviewboost.click";
-            const reviewLink = `${baseUrl}/review/${selectedBusiness.id}`;
+            // Append Link - FORCE PRODUCTION URL
+            // This ensures the link always points to the public site, avoiding Vercel Login issues
+            const PRODUCTION_DOMAIN = "https://localreviewboost.click";
+            const reviewLink = `${PRODUCTION_DOMAIN}/review/${selectedBusiness.id}`;
             textToShare += reviewLink;
 
             // Open WhatsApp
@@ -484,7 +484,7 @@ function DashboardContent() {
                                             <h2 className="text-lg font-semibold mb-4 text-gray-800">{t.qrTitle}</h2>
                                             <div id="qr-code-container" className="flex justify-center mb-6 bg-white p-4 rounded-lg">
                                                 <QRCodeCanvas
-                                                    value={`${process.env.NEXT_PUBLIC_BASE_URL || "https://localreviewboost.click"}/review/${selectedBusiness.id}`}
+                                                    value={`https://localreviewboost.click/review/${selectedBusiness.id}`}
                                                     size={200}
                                                     level="H"
                                                     includeMargin={true}
