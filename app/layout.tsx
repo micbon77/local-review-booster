@@ -38,7 +38,7 @@ export default function RootLayout({
         {/* Iubenda Consent Database */}
         <Script
           id="iubenda-consent-db"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               var _iub = _iub || {}; 
@@ -49,13 +49,13 @@ export default function RootLayout({
         />
         <Script
           src="https://cdn.iubenda.com/cons/iubenda_cons.js"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
 
         {/* Iubenda Widget */}
         <Script
           src="https://embeds.iubenda.com/widgets/6a4ed737-f1eb-4ae0-a1c0-a6f5cd7a7cd8.js"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
       </body>
     </html>
