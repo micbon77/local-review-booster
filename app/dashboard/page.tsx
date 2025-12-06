@@ -233,7 +233,16 @@ function DashboardContent() {
         const textToShare = `${leadingText} ${reviewLink}`;
 
         // Open WhatsApp
-        window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
+        // specific 'text' param works better with api.whatsapp.com on mobile
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const waUrl = isMobile
+            ? `whatsapp://send?text=${encodeURIComponent(textToShare)}` // Deep link for mobile
+            : `https://web.whatsapp.com/send?text=${encodeURIComponent(textToShare)}`; // Web for desktop
+
+        // Fallback to universal link if detection fails or for broad compatibility
+        const universalUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(textToShare)}`;
+
+        window.open(universalUrl, "_blank");
     };
 
 
