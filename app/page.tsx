@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Star, QrCode, MessageSquare, TrendingUp } from 'lucide-react'
+import Footer from '@/components/Footer'
 
 export default function Home() {
   return (
@@ -148,49 +149,7 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-20 py-8 border-t bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
-            <div className="flex items-center">
-              <img src="/logo.png" alt="Local Review Boost" className="h-72" />
-            </div>
-            <div className="text-center md:text-right text-gray-500 text-sm">
-              <p>Local Review Booster &copy; {new Date().getFullYear()}</p>
-              <p className="mt-1">P.IVA IT01358070553</p>
-            </div>
-          </div>
-
-          {/* Legal Links */}
-          <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 border-t pt-4">
-            <a
-              href="https://www.iubenda.com/privacy-policy/52538758"
-              className="hover:text-blue-600 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Privacy Policy
-            </a>
-            <span className="text-gray-400">•</span>
-            <a
-              href="https://www.iubenda.com/privacy-policy/52538758/cookie-policy"
-              className="hover:text-blue-600 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Cookie Policy
-            </a>
-            <span className="text-gray-400">•</span>
-            <a
-              href="https://www.iubenda.com/termini-e-condizioni/52538758"
-              className="hover:text-blue-600 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Termini e Condizioni
-            </a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
