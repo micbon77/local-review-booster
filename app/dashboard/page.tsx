@@ -54,8 +54,11 @@ function DashboardContent() {
     const [showSuccess, setShowSuccess] = useState(false);
 
     // AI Generation State
+    // AI Generation State
+    // const [generating, setGenerating] = useState(false);
 
-
+    // WhatsApp Direct Number
+    const [clientPhone, setClientPhone] = useState("");
     // ---- Auth check -------------------------------------------------------
     useEffect(() => {
         async function getSession() {
@@ -231,18 +234,27 @@ function DashboardContent() {
         const reviewLink = `${PRODUCTION_DOMAIN}/review/${selectedBusiness.id}`;
 
         const textToShare = `${leadingText} ${reviewLink}`;
+        const encodedText = encodeURIComponent(textToShare);
 
-        // Open WhatsApp
-        // specific 'text' param works better with api.whatsapp.com on mobile
+        // Logic for Direct Phone Number (if provided)
+        if (clientPhone) {
+            // Remove spaces, dashes, parentheses to clean number
+            const cleanPhone = clientPhone.replace(/\D/g, '');
+            if (cleanPhone.length > 5) {
+                // Use universal link with phone number
+                window.open(`https://wa.me/${cleanPhone}?text=${encodedText}`, "_blank");
+                return;
+            }
+        }
+
+        // Standard logic (pick contact)
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         const waUrl = isMobile
-            ? `whatsapp://send?text=${encodeURIComponent(textToShare)}` // Deep link for mobile
-            : `https://web.whatsapp.com/send?text=${encodeURIComponent(textToShare)}`; // Web for desktop
+            ? `whatsapp://send?text=${encodedText}` // Deep link for mobile
+            : `https://web.whatsapp.com/send?text=${encodedText}`; // Web for desktop
 
-        // Fallback to universal link if detection fails or for broad compatibility
-        const universalUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(textToShare)}`;
-
-        window.open(universalUrl, "_blank");
+        // Use universal link as safest fallback
+        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, "_blank");
     };
 
 
@@ -473,6 +485,20 @@ function DashboardContent() {
                                                     </svg>
                                                     {t.downloadPoster || "Download PDF Poster"}
                                                 </button>
+
+                                                {/* Direct Phone Input */}
+                                                <div className="mb-2">
+                                                    <input
+                                                        type="tel"
+                                                        placeholder="Number (e.g. 39333...)"
+                                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-green-400 outline-none"
+                                                        value={clientPhone}
+                                                        onChange={(e) => setClientPhone(e.target.value)}
+                                                    />
+                                                    <p className="text-[10px] text-gray-400 mt-1">
+                                                        Optional: Enter number to send directly. Leave empty to choose contact.
+                                                    </p>
+                                                </div>
 
                                                 {/* WhatsApp Share Button */}
                                                 <button
