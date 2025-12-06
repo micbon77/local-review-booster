@@ -231,6 +231,7 @@ function DashboardContent() {
 
         try {
             let textToShare = "";
+            let aiSuccess = false;
 
             // Generate AI Review Text
             try {
@@ -239,17 +240,25 @@ function DashboardContent() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ businessName: selectedBusiness.business_name }),
                 });
+
+                if (!res.ok) throw new Error(res.statusText);
+
                 const data = await res.json();
                 if (data.text) {
                     textToShare += data.text + "\n\n";
+                    aiSuccess = true;
                 }
             } catch (err) {
-                console.error("AI Generation failed, falling back to default text", err);
+                console.error("AI Generation failed:", err);
+                // Fallback text
                 textToShare += `Ciao! Lascia una recensione per ${selectedBusiness.business_name}: `;
+                alert("AI generation failed (Check API Key). Using default text.");
             }
 
-            // Append Link
-            const reviewLink = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${selectedBusiness.id}`;
+            // Append Link - FORCE PRODUCTION URL IF ENV IS MISSING
+            // using localreviewboost.click as primary fallback instead of localhost
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://localreviewboost.click";
+            const reviewLink = `${baseUrl}/review/${selectedBusiness.id}`;
             textToShare += reviewLink;
 
             // Open WhatsApp
@@ -475,7 +484,7 @@ function DashboardContent() {
                                             <h2 className="text-lg font-semibold mb-4 text-gray-800">{t.qrTitle}</h2>
                                             <div id="qr-code-container" className="flex justify-center mb-6 bg-white p-4 rounded-lg">
                                                 <QRCodeCanvas
-                                                    value={`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/review/${selectedBusiness.id}`}
+                                                    value={`${process.env.NEXT_PUBLIC_BASE_URL || "https://localreviewboost.click"}/review/${selectedBusiness.id}`}
                                                     size={200}
                                                     level="H"
                                                     includeMargin={true}
@@ -497,8 +506,8 @@ function DashboardContent() {
                                                     onClick={handleWhatsAppShare}
                                                     disabled={generating}
                                                     className={`w-full px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 font-medium transition-colors ${isPro
-                                                            ? "bg-[#25D366] text-white hover:bg-[#20bd5a]"
-                                                            : "bg-gray-100 text-gray-400 cursor-pointer"
+                                                        ? "bg-[#25D366] text-white hover:bg-[#20bd5a]"
+                                                        : "bg-gray-100 text-gray-400 cursor-pointer"
                                                         }`}
                                                 >
                                                     {generating ? (
