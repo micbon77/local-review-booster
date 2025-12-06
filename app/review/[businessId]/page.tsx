@@ -69,6 +69,9 @@ export default function ReviewPage() {
                     window.location.href = redirectUrl;
                 }, 2000);
                 return () => clearTimeout(timer);
+            } else {
+                // Fallback if no link is configured
+                setSubmitted(true);
             }
         }
     }, [rating, business]);
