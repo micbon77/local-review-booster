@@ -54,7 +54,7 @@ function DashboardContent() {
     const [showSuccess, setShowSuccess] = useState(false);
 
     // AI Generation State
-    const [generating, setGenerating] = useState(false);
+
 
     // ---- Auth check -------------------------------------------------------
     useEffect(() => {
@@ -219,57 +219,21 @@ function DashboardContent() {
         }
     };
 
-    // ---- Handle WhatsApp Share (Pro) -------------------------------------
-    const handleWhatsAppShare = async () => {
-        if (!isPro) {
-            handleUpgrade();
-            return;
-        }
+    // ---- Handle WhatsApp Share -------------------------------------------
+    const handleWhatsAppShare = () => {
+        // Simplified Logic: Just share the link. 
+        // AI Review generation is now handled on the client side (Review Page) for Pro users.
 
-        if (generating) return;
-        setGenerating(true);
+        const leadingText = `Ciao! Lascia una recensione per ${selectedBusiness.business_name}: `;
 
-        try {
-            let textToShare = "";
-            let aiSuccess = false;
+        // Append Link - FORCE PRODUCTION URL
+        const PRODUCTION_DOMAIN = "https://localreviewboost.click";
+        const reviewLink = `${PRODUCTION_DOMAIN}/review/${selectedBusiness.id}`;
 
-            // Generate AI Review Text
-            try {
-                const res = await fetch("/api/generate-review", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ businessName: selectedBusiness.business_name }),
-                });
+        const textToShare = `${leadingText} ${reviewLink}`;
 
-                if (!res.ok) throw new Error(res.statusText);
-
-                const data = await res.json();
-                if (data.text) {
-                    textToShare += data.text + "\n\n";
-                    aiSuccess = true;
-                }
-            } catch (err) {
-                console.error("AI Generation failed:", err);
-                // Fallback text
-                textToShare += `Ciao! Lascia una recensione per ${selectedBusiness.business_name}: `;
-                alert("AI generation failed (Check API Key). Using default text.");
-            }
-
-            // Append Link - FORCE PRODUCTION URL
-            // This ensures the link always points to the public site, avoiding Vercel Login issues
-            const PRODUCTION_DOMAIN = "https://localreviewboost.click";
-            const reviewLink = `${PRODUCTION_DOMAIN}/review/${selectedBusiness.id}`;
-            textToShare += reviewLink;
-
-            // Open WhatsApp
-            window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
-
-        } catch (e) {
-            console.error(e);
-            alert("Errore durante la condivisione");
-        } finally {
-            setGenerating(false);
-        }
+        // Open WhatsApp
+        window.open(`https://wa.me/?text=${encodeURIComponent(textToShare)}`, "_blank");
     };
 
 
@@ -504,25 +468,10 @@ function DashboardContent() {
                                                 {/* WhatsApp Share Button */}
                                                 <button
                                                     onClick={handleWhatsAppShare}
-                                                    disabled={generating}
-                                                    className={`w-full px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 font-medium transition-colors ${isPro
-                                                        ? "bg-[#25D366] text-white hover:bg-[#20bd5a]"
-                                                        : "bg-gray-100 text-gray-400 cursor-pointer"
-                                                        }`}
+                                                    className="w-full px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 font-medium transition-colors bg-[#25D366] text-white hover:bg-[#20bd5a]"
                                                 >
-                                                    {generating ? (
-                                                        <>
-                                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                            Generazione ID...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <MessageCircle className="w-5 h-5" />
-                                                            Invia su WhatsApp {isPro ? "(AI)" : "(Pro)"}
-                                                        </>
-                                                    )}
-
-                                                    {!isPro && <Lock className="w-4 h-4 ml-1" />}
+                                                    <MessageCircle className="w-5 h-5" />
+                                                    Invia su WhatsApp
                                                 </button>
                                             </div>
 
