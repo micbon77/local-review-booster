@@ -50,12 +50,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://localreviewboost.click";
-
-        // Send email to each subscriber (using batching or individual calls)
-        // For simplicity and Resend limits, let's look: Resend supports batching.
-        // But free tier might have limits. Let's do individual for now or small batches.
-        // For this MVP, we loop.
+        const baseUrl = "https://localreviewboost.click";
 
         const emailPromises = subscribers.map(async (sub) => {
             const unsubscribeUrl = `${baseUrl}/unsubscribe?userId=${sub.user_id}`;
