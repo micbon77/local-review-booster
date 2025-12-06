@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
             const unsubscribeUrl = `${baseUrl}/unsubscribe?userId=${sub.user_id}`;
 
             return resend.emails.send({
-                from: "Local Review Boost <onboarding@resend.dev>",
+                from: "Local Review Boost <noreply@localreviewboost.click>",
                 to: [sub.email],
                 subject: subject,
                 html: `

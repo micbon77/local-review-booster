@@ -5,26 +5,26 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
-    try {
-        const { email, userId } = await req.json();
+  try {
+    const { email, userId } = await req.json();
 
-        if (!email) {
-            return NextResponse.json(
-                { error: "Missing email" },
-                { status: 400 }
-            );
-        }
+    if (!email) {
+      return NextResponse.json(
+        { error: "Missing email" },
+        { status: 400 }
+      );
+    }
 
-        // Create unsubscribe URL
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-        const unsubscribeUrl = `${baseUrl}/unsubscribe?userId=${userId}`;
+    // Create unsubscribe URL
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const unsubscribeUrl = `${baseUrl}/unsubscribe?userId=${userId}`;
 
-        // Send welcome email
-        const { data, error } = await resend.emails.send({
-            from: "Local Review Boost <onboarding@resend.dev>", // Change to your verified domain
-            to: [email],
-            subject: "Benvenuto in Local Review Boost! 🎉",
-            html: `
+    // Send welcome email
+    const { data, error } = await resend.emails.send({
+      from: "Local Review Boost <noreply@localreviewboost.click>",
+      to: [email],
+      subject: "Benvenuto in Local Review Boost! 🎉",
+      html: `
         <!DOCTYPE html>
         <html>
           <head>
@@ -82,22 +82,22 @@ export async function POST(req: NextRequest) {
           </body>
         </html>
       `,
-        });
+    });
 
-        if (error) {
-            console.error("Resend error:", error);
-            return NextResponse.json(
-                { error: "Failed to send email" },
-                { status: 500 }
-            );
-        }
-
-        return NextResponse.json({ success: true, data });
-    } catch (error) {
-        console.error("Welcome email error:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+    if (error) {
+      console.error("Resend error:", error);
+      return NextResponse.json(
+        { error: "Failed to send email" },
+        { status: 500 }
+      );
     }
+
+    return NextResponse.json({ success: true, data });
+  } catch (error) {
+    console.error("Welcome email error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
